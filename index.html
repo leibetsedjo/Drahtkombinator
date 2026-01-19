@@ -17,7 +17,7 @@
       --stroke: rgba(15, 23, 42, 0.08);
 
       --blue: #2563eb;
-      --blue2: #1d4ed8;
+      --blue2:#1d4ed8;
 
       --pos: #16a34a;
       --posBg: rgba(22, 163, 74, 0.08);
@@ -66,7 +66,7 @@
 
     h1{
       margin: 0 0 4px;
-      font-size: 22px;
+      font-size: 24px;
       letter-spacing: .2px;
     }
     .subtitle{
@@ -86,29 +86,36 @@
 
     button{
       border: 0;
-      border-radius: 14px;
-      padding: 10px 14px;
-      font-weight: 650;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 750;
       font-size: 14px;
       cursor: pointer;
-      box-shadow: var(--shadow2);
       transition: transform .06s ease, filter .15s ease;
+      white-space: nowrap;
     }
     button:active{ transform: translateY(1px); }
+
     .btn-primary{
       background: linear-gradient(180deg, #3b82f6, var(--blue2));
       color: white;
+      box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
     }
+    .btn-primary:hover{ filter: brightness(1.04); }
+
     .btn-ghost{
       background: #fff;
       color: var(--text);
-      border: 1px solid var(--stroke);
-      box-shadow: none;
+      border: 1px solid rgba(15,23,42,.12);
     }
+    .btn-ghost:hover{ filter: brightness(0.98); }
+
     .btn-success{
       background: linear-gradient(180deg, #22c55e, #16a34a);
       color: white;
+      box-shadow: 0 10px 22px rgba(22, 163, 74, 0.18);
     }
+    .btn-success:hover{ filter: brightness(1.04); }
 
     .grid{
       display:grid;
@@ -133,6 +140,7 @@
       margin: 0 0 4px;
       font-size: 16px;
       letter-spacing: .2px;
+      font-weight: 800;
     }
     .section-sub{
       margin: 0 0 14px;
@@ -152,21 +160,29 @@
       display:flex;
       align-items:center;
       gap: 8px;
-      background:#fff;
     }
     .field.small{ flex: .6; }
 
-    label.small{
-      width: 18px;
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: rgba(15,23,42,.06);
       color: var(--muted);
-      font-size: 13px;
+      font-weight: 900;
+      font-size: 12px;
+      border: 1px solid rgba(15,23,42,.08);
+      flex: 0 0 auto;
     }
 
     input{
       width: 100%;
       border: 1px solid rgba(15, 23, 42, 0.12);
-      border-radius: 14px;
-      padding: 10px 12px;
+      border-radius: 999px;
+      padding: 11px 14px;
       font-size: 14px;
       outline: none;
       transition: box-shadow .15s ease, border-color .15s ease;
@@ -194,16 +210,17 @@
 
     .actions{
       display:flex;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
       margin-top: 12px;
-      align-items:center;
+      align-items:flex-end;
     }
+    .actions .grow{ flex: 1 1 320px; min-width: 240px; }
 
     .hint{
       color: var(--muted);
       font-size: 12.5px;
-      margin-top: 6px;
+      margin-top: 8px;
     }
 
     .alert{
@@ -213,7 +230,7 @@
       background: var(--warnBg);
       border: 1px solid var(--warnStroke);
       color: #7c5a00;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 13px;
     }
 
@@ -241,17 +258,17 @@
       margin-bottom: 8px;
     }
     .result-title{
-      font-weight: 800;
+      font-weight: 900;
       font-size: 14.5px;
       margin: 0;
     }
     .badge{
       border-radius: 999px;
-      padding: 6px 10px;
-      font-weight: 800;
+      padding: 7px 12px;
+      font-weight: 900;
       font-size: 12px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.7);
+      border: 1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.85);
     }
     .badge.pos{ color: var(--pos); border-color: var(--posStroke); }
     .badge.neg{ color: var(--neg); border-color: var(--negStroke); }
@@ -264,8 +281,9 @@
       color: var(--muted);
       font-size: 13px;
       margin: 6px 0 0;
+      line-height: 1.35;
     }
-    .kv strong{ color: var(--text); font-weight: 800; }
+    .kv strong{ color: var(--text); font-weight: 900; }
 
     .empty{
       color: var(--muted);
@@ -290,7 +308,7 @@
       const [tolMinus, setTolMinus] = React.useState(0.2);
       const [tolPlus, setTolPlus] = React.useState(0.2);
       const [pdfName, setPdfName] = React.useState("");
-      const [results, setResults] = React.useState([]); // [{used, dev, title}]
+      const [results, setResults] = React.useState([]);
       const [status, setStatus] = React.useState("");
 
       function updateRow(i, key, val){
@@ -372,13 +390,19 @@
 
         let out = [];
 
+        // ✅ Kombi 1/2 Logik inkl. Fallback (wenn keine negativen existieren -> zweitbeste positive)
         if (plusList.length > 0){
           out.push({ ...plusList[0], title: "Kombination 1 (beste positive)" });
+
           if (minusList.length > 0){
             out.push({ ...minusList[0], title: "Kombination 2 (beste negative)" });
+          } else if (plusList.length > 1){
+            out.push({ ...plusList[1], title: "Kombination 2 (positiv)" });
           }
+
         } else if (minusList.length > 0){
           out.push({ ...minusList[0], title: "Kombination 1 (beste negative)" });
+
           if (minusList.length > 1){
             out.push({ ...minusList[1], title: "Kombination 2 (negativ)" });
           }
@@ -397,7 +421,7 @@
           e("div", null,
             e("h1", null, "Drahtkombinator"),
             e("p", { className:"subtitle" },
-              "Wie zu Beginn heute: helles Apple-Design, Farben für positiv/negativ, ohne Bootstrap. Max. 5 Drähte pro Kombination."
+              "Apple-Look wie heute zu Beginn. Farben für positiv/negativ. Max. 5 Drähte. Nur 1 PDF-Button."
             )
           ),
           e("div", { className:"btnrow" },
@@ -417,7 +441,7 @@
             rows.map((r,i) =>
               e("div", { key:i, className:"row" },
                 e("div", { className:"field" },
-                  e("label", { className:"small" }, "Ø"),
+                  e("span", { className:"chip" }, "Ø"),
                   e("input", {
                     placeholder:"Durchmesser (mm)",
                     value:r.d,
@@ -425,7 +449,7 @@
                   })
                 ),
                 e("div", { className:"field small" },
-                  e("label", { className:"small" }, "x"),
+                  e("span", { className:"chip" }, "x"),
                   e("input", {
                     placeholder:"Anzahl",
                     value:r.n,
@@ -453,7 +477,7 @@
             ),
 
             e("div", { className:"actions" },
-              e("div", { style:{ flex:"1" } },
+              e("div", { className:"grow" },
                 e("div", { className:"section-sub" }, "PDF-Dateiname (optional)"),
                 e("input", {
                   placeholder:"z.B. drahtkombination_01",
@@ -490,7 +514,7 @@
                 e("p", { className:"kv" },
                   "Drähte: ",
                   e("strong", { className:"mono" }, r.used.join(", ") + " mm"),
-                  "  (", e("strong", null, r.used.length), "x)"
+                  " (", e("strong", null, r.used.length), "x)"
                 ),
                 e("p", { className:"kv" },
                   "Abweichung: ",
