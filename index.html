@@ -341,8 +341,10 @@ function App() {
           }
         },
           e('h4', null,
-            idx === 0 ? 'Kombination 1 (Abweichung positiv)' :
-            idx === 1 ? 'Kombination 2 (Abweichung negativ)' :
+            idx === 0 && r.dev >= 0 ? 'Kombination 1 (Abweichung positiv)' :
+            idx === 0 && r.dev < 0  ? 'Kombination 1 (Abweichung negativ)' :
+            idx === 1 && r.dev >= 0 ? 'Kombination 2 (Abweichung positiv)' :
+            idx === 1 && r.dev < 0  ? 'Kombination 2 (Abweichung negativ)' :
             'Kombination ' + (idx + 1)
           ),
           e('ul', null,
