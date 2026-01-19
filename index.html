@@ -5,169 +5,274 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Drahtkombinator</title>
 
-  <!-- Bootstrap 5 (nur Layout + Basis-Styles) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
-
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
   <style>
-    /* ========= Modern Theme ========= */
     :root{
-      --bg0:#0b1220;
-      --bg1:#0f172a;
-      --card:rgba(255,255,255,.08);
-      --card2:rgba(255,255,255,.06);
-      --stroke:rgba(255,255,255,.12);
-      --text:#e5e7eb;
-      --muted:#a7b0c0;
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --stroke: rgba(15, 23, 42, 0.08);
 
-      --accent:#4f46e5;  /* indigo */
-      --accent2:#06b6d4; /* cyan */
-      --good:#22c55e;
-      --bad:#ef4444;
-      --warn:#f59e0b;
+      --blue: #2563eb;
+      --blue2: #1d4ed8;
 
-      --shadow: 0 18px 50px rgba(0,0,0,.35);
-      --shadow2: 0 10px 28px rgba(0,0,0,.28);
-      --radius: 18px;
+      --pos: #16a34a;
+      --posBg: rgba(22, 163, 74, 0.08);
+      --posStroke: rgba(22, 163, 74, 0.20);
+
+      --neg: #dc2626;
+      --negBg: rgba(220, 38, 38, 0.08);
+      --negStroke: rgba(220, 38, 38, 0.20);
+
+      --warnBg: rgba(245, 158, 11, 0.12);
+      --warnStroke: rgba(245, 158, 11, 0.25);
+
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+      --shadow2: 0 10px 26px rgba(15, 23, 42, 0.06);
+
+      --r16: 16px;
+      --r20: 20px;
     }
 
+    *{ box-sizing: border-box; }
     body{
-      min-height: 100vh;
-      background:
-        radial-gradient(900px 500px at 15% 10%, rgba(79,70,229,.25), transparent 55%),
-        radial-gradient(900px 500px at 85% 20%, rgba(6,182,212,.20), transparent 55%),
-        radial-gradient(900px 500px at 60% 90%, rgba(34,197,94,.12), transparent 60%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: var(--bg);
       color: var(--text);
     }
 
-    /* Container spacing */
-    .wrap{ max-width: 1100px; }
-
-    /* Glass cards */
-    .card-glass{
-      background: linear-gradient(180deg, var(--card), var(--card2));
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 22px 18px 34px;
     }
 
-    .section-title{
-      font-size: 1.1rem;
+    .topbar{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 14px;
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--r20);
+      padding: 18px 18px;
+      box-shadow: var(--shadow);
+    }
+
+    h1{
+      margin: 0 0 4px;
+      font-size: 22px;
       letter-spacing: .2px;
     }
-
-    .subtle{
+    .subtitle{
+      margin:0;
       color: var(--muted);
-      font-size: .95rem;
+      font-size: 13.5px;
+      line-height: 1.35;
     }
 
-    .divider{
-      border-top: 1px solid rgba(255,255,255,.10);
-    }
-
-    /* Controls */
-    .form-control, .input-group-text{
-      background: rgba(255,255,255,.06) !important;
-      border: 1px solid rgba(255,255,255,.14) !important;
-      color: var(--text) !important;
-      border-radius: 14px;
-    }
-    .form-control::placeholder{ color: rgba(229,231,235,.55); }
-    .input-group-text{ color: rgba(229,231,235,.80) !important; }
-
-    .input-group .input-group-text:first-child{ border-top-right-radius: 0; border-bottom-right-radius: 0; }
-    .input-group .form-control{ border-top-left-radius: 0; border-bottom-left-radius: 0; }
-    .input-group .input-group-text:last-child{ border-top-left-radius: 0; border-bottom-left-radius: 0; }
-    .input-group .form-control + .input-group-text{ border-top-left-radius: 0; border-bottom-left-radius: 0; }
-
-    /* Buttons - modern */
-    .btn{
-      border-radius: 14px;
-      padding: .60rem .95rem;
-      border: 1px solid transparent;
-      box-shadow: var(--shadow2);
-    }
-    .btn-primary{
-      background: linear-gradient(135deg, var(--accent), #312e81);
-      border-color: rgba(255,255,255,.10);
-    }
-    .btn-primary:hover{ filter: brightness(1.07); }
-    .btn-outline-light{
-      border-color: rgba(255,255,255,.20);
-      color: rgba(255,255,255,.90);
-      background: rgba(255,255,255,.04);
-    }
-    .btn-outline-light:hover{
-      background: rgba(255,255,255,.10);
-      border-color: rgba(255,255,255,.30);
-      color: #fff;
-    }
-    .btn-success{
-      background: linear-gradient(135deg, #22c55e, #15803d);
-      border-color: rgba(255,255,255,.10);
-    }
-
-    /* Chips / badges */
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:.45rem;
-      padding:.35rem .65rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.05);
-      color: rgba(255,255,255,.90);
-      font-size: .85rem;
-    }
-    .dot{
-      width:10px;height:10px;border-radius:999px;display:inline-block;
-      background: rgba(255,255,255,.4);
-    }
-    .dot.good{ background: var(--good); }
-    .dot.bad{ background: var(--bad); }
-    .dot.accent{ background: var(--accent2); }
-
-    /* Result cards */
-    .result-card{
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      padding: 14px;
-    }
-    .result-pos{
-      border-color: rgba(34,197,94,.30);
-      background: linear-gradient(180deg, rgba(34,197,94,.10), rgba(255,255,255,.04));
-    }
-    .result-neg{
-      border-color: rgba(239,68,68,.30);
-      background: linear-gradient(180deg, rgba(239,68,68,.10), rgba(255,255,255,.04));
-    }
-
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-
-    /* Alert */
-    .alert-modern{
-      border-radius: 16px;
-      border: 1px solid rgba(245,158,11,.28);
-      background: rgba(245,158,11,.10);
-      color: rgba(255,255,255,.92);
-      box-shadow: var(--shadow2);
-    }
-
-    /* Small helpers */
-    .kpi{
+    .btnrow{
       display:flex;
       gap: 10px;
       flex-wrap: wrap;
+      justify-content:flex-end;
+      align-items:center;
     }
 
-    /* Make bootstrap text muted look good on dark */
-    .text-secondary{ color: var(--muted) !important; }
+    button{
+      border: 0;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-weight: 650;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow2);
+      transition: transform .06s ease, filter .15s ease;
+    }
+    button:active{ transform: translateY(1px); }
+    .btn-primary{
+      background: linear-gradient(180deg, #3b82f6, var(--blue2));
+      color: white;
+    }
+    .btn-ghost{
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--stroke);
+      box-shadow: none;
+    }
+    .btn-success{
+      background: linear-gradient(180deg, #22c55e, #16a34a);
+      color: white;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    @media (max-width: 960px){
+      .grid{ grid-template-columns: 1fr; }
+      .btnrow{ justify-content:flex-start; }
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--r20);
+      padding: 18px;
+      box-shadow: var(--shadow2);
+    }
+
+    .section-title{
+      margin: 0 0 4px;
+      font-size: 16px;
+      letter-spacing: .2px;
+    }
+    .section-sub{
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .row{
+      display:flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items:center;
+    }
+
+    .field{
+      flex: 1;
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      background:#fff;
+    }
+    .field.small{ flex: .6; }
+
+    label.small{
+      width: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input{
+      width: 100%;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      transition: box-shadow .15s ease, border-color .15s ease;
+      background: #fff;
+    }
+    input:focus{
+      border-color: rgba(37,99,235,.45);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    .hr{
+      height:1px;
+      background: rgba(15, 23, 42, 0.08);
+      margin: 14px 0;
+    }
+
+    .settings{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 720px){
+      .settings{ grid-template-columns: 1fr; }
+    }
+
+    .actions{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      align-items:center;
+    }
+
+    .hint{
+      color: var(--muted);
+      font-size: 12.5px;
+      margin-top: 6px;
+    }
+
+    .alert{
+      margin-top: 12px;
+      padding: 12px 12px;
+      border-radius: var(--r16);
+      background: var(--warnBg);
+      border: 1px solid var(--warnStroke);
+      color: #7c5a00;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .result{
+      border-radius: var(--r20);
+      padding: 14px;
+      border: 1px solid var(--stroke);
+      background: #fff;
+      margin-bottom: 12px;
+    }
+    .result.pos{
+      background: var(--posBg);
+      border-color: var(--posStroke);
+    }
+    .result.neg{
+      background: var(--negBg);
+      border-color: var(--negStroke);
+    }
+
+    .result-head{
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      align-items:flex-start;
+      margin-bottom: 8px;
+    }
+    .result-title{
+      font-weight: 800;
+      font-size: 14.5px;
+      margin: 0;
+    }
+    .badge{
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-weight: 800;
+      font-size: 12px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.7);
+    }
+    .badge.pos{ color: var(--pos); border-color: var(--posStroke); }
+    .badge.neg{ color: var(--neg); border-color: var(--negStroke); }
+
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                   "Liberation Mono","Courier New", monospace;
+    }
+    .kv{
+      color: var(--muted);
+      font-size: 13px;
+      margin: 6px 0 0;
+    }
+    .kv strong{ color: var(--text); font-weight: 800; }
+
+    .empty{
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.35;
+      margin: 0;
+    }
   </style>
 </head>
 
@@ -179,15 +284,14 @@
 
     function area(d){ return Math.PI * d * d / 4; }
 
-    function App() {
+    function App(){
       const [rows, setRows] = React.useState(Array(4).fill({ d:"", n:"" }));
       const [maxDev, setMaxDev] = React.useState(10);
       const [tolMinus, setTolMinus] = React.useState(0.2);
       const [tolPlus, setTolPlus] = React.useState(0.2);
       const [pdfName, setPdfName] = React.useState("");
-      const [results, setResults] = React.useState([]);   // [{used, dev, title}]
+      const [results, setResults] = React.useState([]); // [{used, dev, title}]
       const [status, setStatus] = React.useState("");
-      const [meta, setMeta] = React.useState({stockCount:0, minD:null, maxD:null, searched:0});
 
       function updateRow(i, key, val){
         const next = [...rows];
@@ -203,13 +307,10 @@
         setPdfName("");
         setResults([]);
         setStatus("");
-        setMeta({stockCount:0, minD:null, maxD:null, searched:0});
       }
 
       function calculate(){
         setStatus("");
-        setResults([]);
-
         let stock = [];
         let minD = Infinity;
         let maxD = -Infinity;
@@ -225,18 +326,19 @@
         });
 
         if (!stock.length || !isFinite(minD)){
+          setResults([]);
           setStatus("Bitte mindestens einen Draht-Durchmesser + Anzahl eingeben.");
-          setMeta({stockCount:0, minD:null, maxD:null, searched:0});
           return;
         }
 
+        // Bereich min/max ± Toleranz
         const minAllowed = minD - tolMinus;
         const maxAllowed = maxD + tolPlus;
         stock = stock.filter(d => d >= minAllowed && d <= maxAllowed);
 
         if (!stock.length){
+          setResults([]);
           setStatus("Keine Drähte im zulässigen Bereich (min/max ± Toleranz).");
-          setMeta({stockCount:0, minD, maxD, searched:0});
           return;
         }
 
@@ -244,16 +346,13 @@
 
         // Suche: max 1000 Kombis, max 5 Drähte
         let combis = [];
-        let searched = 0;
-
         for (let i=0; i<stock.length && combis.length<1000; i++){
           let sum = 0;
           let used = [];
           for (let j=i; j<stock.length; j++){
-            if (used.length >= 5) break; // ✅ max. 5 Drähte
+            if (used.length >= 5) break; // ✅ max 5
             sum += area(stock[j]);
             used.push(stock[j]);
-            searched++;
 
             const dev = (sum - target) / target * 100;
             if (Math.abs(dev) <= maxDev){
@@ -262,24 +361,17 @@
           }
         }
 
-        setMeta({stockCount: stock.length, minD, maxD, searched});
-
         if (!combis.length){
+          setResults([]);
           setStatus("Keine Kombination innerhalb der Abweichung gefunden (ggf. Abweichung erhöhen).");
           return;
         }
 
-        const plusList = combis
-          .filter(c => c.dev >= 0)
-          .sort((a,b) => a.dev - b.dev);
-
-        const minusList = combis
-          .filter(c => c.dev < 0)
-          .sort((a,b) => b.dev - a.dev); // näher an 0 ist besser
+        const plusList = combis.filter(c => c.dev >= 0).sort((a,b) => a.dev - b.dev);
+        const minusList = combis.filter(c => c.dev < 0).sort((a,b) => b.dev - a.dev);
 
         let out = [];
 
-        // Titel-Logik wie gewünscht
         if (plusList.length > 0){
           out.push({ ...plusList[0], title: "Kombination 1 (beste positive)" });
           if (minusList.length > 0){
@@ -296,204 +388,118 @@
       }
 
       function savePDF(){
-        // Platzhalter – später können wir jsPDF sauber integrieren
         alert("PDF speichern: " + (pdfName || "drahtkombination"));
       }
 
-      return e("div", { className: "container py-4 wrap" },
+      return e("div", { className:"wrap" },
 
-        /* Header Card */
-        e("div", { className: "card-glass p-4 mb-4" },
-          e("div", { className: "d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3" },
-            e("div", null,
-              e("div", { className: "d-flex align-items-center gap-2 mb-1" },
-                e("span", { className: "chip" },
-                  e("span", { className: "dot accent" }), "Drahtkombinator"
-                ),
-                e("span", { className: "chip" },
-                  e("span", { className: "dot" }), "max. 5 Drähte"
-                )
-              ),
-              e("h2", { className: "mb-1" }, "Kombinationen schnell finden"),
-              e("div", { className: "subtle" },
-                "Modernes Layout (Bootstrap + Custom Theme). Kombination 1 = beste positive (wenn vorhanden), sonst beste negative. Kombination 2 immer negativ."
-              )
-            ),
-            e("div", { className: "d-flex gap-2 flex-wrap" },
-              e("button", { className: "btn btn-primary", onClick: calculate }, "Berechnen"),
-              e("button", { className: "btn btn-outline-light", onClick: resetAll }, "Reset")
+        e("div", { className:"topbar" },
+          e("div", null,
+            e("h1", null, "Drahtkombinator"),
+            e("p", { className:"subtitle" },
+              "Wie zu Beginn heute: helles Apple-Design, Farben für positiv/negativ, ohne Bootstrap. Max. 5 Drähte pro Kombination."
             )
+          ),
+          e("div", { className:"btnrow" },
+            e("button", { className:"btn-primary", onClick: calculate }, "Berechnen"),
+            e("button", { className:"btn-ghost", onClick: resetAll }, "Reset")
           )
         ),
 
-        e("div", { className: "row g-3" },
+        e("div", { className:"grid" },
 
-          /* Left: Inputs */
-          e("div", { className: "col-12 col-lg-7" },
-            e("div", { className: "card-glass p-4" },
-              e("div", { className: "d-flex justify-content-between align-items-center mb-3" },
-                e("div", null,
-                  e("div", { className: "section-title fw-semibold" }, "Lagerbestand"),
-                  e("div", { className: "subtle" }, "Bis zu 4 Zeilen: Durchmesser + Anzahl.")
-                )
-              ),
+          e("div", { className:"card" },
+            e("div", null,
+              e("div", { className:"section-title" }, "Lagerbestand"),
+              e("div", { className:"section-sub" }, "Bis zu 4 Zeilen: Durchmesser (mm) + Anzahl")
+            ),
 
-              rows.map((r, i) =>
-                e("div", { key: i, className: "row g-2 align-items-center mb-2" },
-
-                  e("div", { className: "col-7 col-md-8" },
-                    e("div", { className: "input-group" },
-                      e("span", { className: "input-group-text" }, "Ø"),
-                      e("input", {
-                        className: "form-control",
-                        placeholder: "Durchmesser (mm)",
-                        value: r.d,
-                        onChange: ev => updateRow(i, "d", ev.target.value)
-                      }),
-                      e("span", { className: "input-group-text" }, "mm")
-                    )
-                  ),
-
-                  e("div", { className: "col-5 col-md-4" },
-                    e("div", { className: "input-group" },
-                      e("span", { className: "input-group-text" }, "x"),
-                      e("input", {
-                        className: "form-control",
-                        placeholder: "Anzahl",
-                        value: r.n,
-                        onChange: ev => updateRow(i, "n", ev.target.value)
-                      })
-                    )
-                  )
-                )
-              ),
-
-              e("div", { className: "divider my-4" }),
-
-              e("div", { className: "row g-3" },
-                e("div", { className: "col-12 col-md-4" },
-                  e("label", { className: "form-label subtle" }, "Max. Abweichung (%)"),
+            rows.map((r,i) =>
+              e("div", { key:i, className:"row" },
+                e("div", { className:"field" },
+                  e("label", { className:"small" }, "Ø"),
                   e("input", {
-                    type: "number",
-                    className: "form-control",
-                    value: maxDev,
-                    onChange: ev => setMaxDev(+ev.target.value)
+                    placeholder:"Durchmesser (mm)",
+                    value:r.d,
+                    onChange: ev => updateRow(i, "d", ev.target.value)
                   })
                 ),
-                e("div", { className: "col-12 col-md-4" },
-                  e("label", { className: "form-label subtle" }, "Toleranz − (mm)"),
+                e("div", { className:"field small" },
+                  e("label", { className:"small" }, "x"),
                   e("input", {
-                    type: "number",
-                    step: "0.1",
-                    className: "form-control",
-                    value: tolMinus,
-                    onChange: ev => setTolMinus(+ev.target.value)
-                  })
-                ),
-                e("div", { className: "col-12 col-md-4" },
-                  e("label", { className: "form-label subtle" }, "Toleranz + (mm)"),
-                  e("input", {
-                    type: "number",
-                    step: "0.1",
-                    className: "form-control",
-                    value: tolPlus,
-                    onChange: ev => setTolPlus(+ev.target.value)
+                    placeholder:"Anzahl",
+                    value:r.n,
+                    onChange: ev => updateRow(i, "n", ev.target.value)
                   })
                 )
-              ),
+              )
+            ),
 
-              e("div", { className: "mt-4" },
-                e("label", { className: "form-label subtle" }, "PDF-Dateiname (optional)"),
+            e("div", { className:"hr" }),
+
+            e("div", { className:"settings" },
+              e("div", null,
+                e("div", { className:"section-sub" }, "Max. Abweichung (%)"),
+                e("input", { type:"number", value:maxDev, onChange: ev => setMaxDev(+ev.target.value) })
+              ),
+              e("div", null,
+                e("div", { className:"section-sub" }, "Toleranz − (mm)"),
+                e("input", { type:"number", step:"0.1", value:tolMinus, onChange: ev => setTolMinus(+ev.target.value) })
+              ),
+              e("div", null,
+                e("div", { className:"section-sub" }, "Toleranz + (mm)"),
+                e("input", { type:"number", step:"0.1", value:tolPlus, onChange: ev => setTolPlus(+ev.target.value) })
+              )
+            ),
+
+            e("div", { className:"actions" },
+              e("div", { style:{ flex:"1" } },
+                e("div", { className:"section-sub" }, "PDF-Dateiname (optional)"),
                 e("input", {
-                  className: "form-control",
-                  placeholder: "z.B. drahtkombination_01",
+                  placeholder:"z.B. drahtkombination_01",
                   value: pdfName,
                   onChange: ev => setPdfName(ev.target.value)
                 }),
-                e("div", { className: "mt-3 d-flex flex-wrap gap-2" },
-                  /* ✅ Nur EIN PDF-Button */
-                  e("button", { className: "btn btn-success", onClick: savePDF }, "Als PDF speichern")
-                )
+                e("div", { className:"hint" }, "Hinweis: PDF ist aktuell ein Platzhalter (können wir als Nächstes fix fertig machen).")
               ),
+              e("button", { className:"btn-success", onClick: savePDF }, "Als PDF speichern")
+            ),
 
-              status
-                ? e("div", { className: "alert-modern p-3 mt-4 mb-0" }, status)
-                : null
-            )
+            status ? e("div", { className:"alert" }, status) : null
           ),
 
-          /* Right: Results */
-          e("div", { className: "col-12 col-lg-5" },
-            e("div", { className: "card-glass p-4" },
-              e("div", { className: "d-flex justify-content-between align-items-center mb-3" },
-                e("div", null,
-                  e("div", { className: "section-title fw-semibold" }, "Ergebnisse"),
-                  e("div", { className: "subtle" }, "Die 2 relevantesten Kombinationen.")
-                )
-              ),
+          e("div", { className:"card" },
+            e("div", { className:"section-title" }, "Ergebnisse"),
+            e("div", { className:"section-sub" }, "Die 2 relevantesten Kombinationen"),
 
-              e("div", { className: "kpi mb-3" },
-                e("span", { className: "chip" },
-                  e("span", { className: "dot accent" }),
+            results.length === 0
+              ? e("p", { className:"empty" },
+                  "Noch keine Ergebnisse. Klicke auf ",
+                  e("strong", null, "Berechnen"),
+                  "."
+                )
+              : null,
+
+            results.map((r, idx) => {
+              const isPos = r.dev >= 0;
+              return e("div", { key: idx, className: "result " + (isPos ? "pos" : "neg") },
+                e("div", { className:"result-head" },
+                  e("p", { className:"result-title" }, r.title),
+                  e("span", { className: "badge " + (isPos ? "pos" : "neg") }, isPos ? "positiv" : "negativ")
+                ),
+                e("p", { className:"kv" },
                   "Drähte: ",
-                  e("span", { className: "mono" }, meta.stockCount || 0)
+                  e("strong", { className:"mono" }, r.used.join(", ") + " mm"),
+                  "  (", e("strong", null, r.used.length), "x)"
                 ),
-                e("span", { className: "chip" },
-                  e("span", { className: "dot" }),
-                  "Suche: ",
-                  e("span", { className: "mono" }, meta.searched || 0)
-                ),
-                e("span", { className: "chip" },
-                  e("span", { className: "dot" }),
-                  "Ø min/max: ",
-                  e("span", { className: "mono" },
-                    (meta.minD != null ? meta.minD.toFixed(2) : "--"),
-                    " / ",
-                    (meta.maxD != null ? meta.maxD.toFixed(2) : "--")
-                  )
+                e("p", { className:"kv" },
+                  "Abweichung: ",
+                  e("strong", { className:"mono" }, r.dev.toFixed(2) + " %")
                 )
-              ),
-
-              results.length === 0
-                ? e("div", { className: "subtle" },
-                    "Noch keine Ergebnisse. Klicke auf ",
-                    e("span", { className: "fw-semibold" }, "Berechnen"),
-                    "."
-                  )
-                : null,
-
-              results.map((r, idx) => {
-                const isPos = r.dev >= 0;
-                return e("div", {
-                  key: idx,
-                  className: "result-card mb-3 " + (isPos ? "result-pos" : "result-neg")
-                },
-                  e("div", { className: "d-flex justify-content-between align-items-start gap-2" },
-                    e("div", null,
-                      e("div", { className: "fw-semibold mb-1" }, r.title),
-                      e("div", { className: "subtle" },
-                        "Drähte: ",
-                        e("span", { className: "mono" }, r.used.join(", ") + " mm"),
-                        " ",
-                        e("span", { className: "chip ms-2" },
-                          e("span", { className: "dot " + (isPos ? "good" : "bad") }),
-                          r.used.length + "x"
-                        )
-                      )
-                    ),
-                    e("span", { className: "chip" },
-                      e("span", { className: "dot " + (isPos ? "good" : "bad") }),
-                      isPos ? "positiv" : "negativ"
-                    )
-                  ),
-                  e("div", { className: "mt-2" },
-                    e("span", { className: "subtle" }, "Abweichung: "),
-                    e("span", { className: "fw-bold mono" }, r.dev.toFixed(2) + " %")
-                  )
-                );
-              })
-            )
+              );
+            })
           )
+
         )
       );
     }
