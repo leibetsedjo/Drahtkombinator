@@ -1,534 +1,405 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Drahtkombinator</title>
-
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Drahtkombination</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <style>
-    :root{
-      --bg: #f5f6f8;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --stroke: rgba(15, 23, 42, 0.08);
-
-      --blue: #2563eb;
-      --blue2:#1d4ed8;
-
-      --pos: #16a34a;
-      --posBg: rgba(22, 163, 74, 0.08);
-      --posStroke: rgba(22, 163, 74, 0.20);
-
-      --neg: #dc2626;
-      --negBg: rgba(220, 38, 38, 0.08);
-      --negStroke: rgba(220, 38, 38, 0.20);
-
-      --warnBg: rgba(245, 158, 11, 0.12);
-      --warnStroke: rgba(245, 158, 11, 0.25);
-
-      --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
-      --shadow2: 0 10px 26px rgba(15, 23, 42, 0.06);
-
-      --r16: 16px;
-      --r20: 20px;
+    body {
+      background-color: white;
     }
-
-    *{ box-sizing: border-box; }
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-                   Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    .wrap{
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 22px 18px 34px;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 14px;
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      border-radius: var(--r20);
-      padding: 18px 18px;
-      box-shadow: var(--shadow);
-    }
-
-    h1{
-      margin: 0 0 4px;
-      font-size: 24px;
-      letter-spacing: .2px;
-    }
-    .subtitle{
-      margin:0;
-      color: var(--muted);
-      font-size: 13.5px;
-      line-height: 1.35;
-    }
-
-    .btnrow{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content:flex-end;
-      align-items:center;
-    }
-
-    button{
-      border: 0;
-      border-radius: 999px;
-      padding: 10px 16px;
-      font-weight: 750;
-      font-size: 14px;
-      cursor: pointer;
-      transition: transform .06s ease, filter .15s ease;
-      white-space: nowrap;
-    }
-    button:active{ transform: translateY(1px); }
-
-    .btn-primary{
-      background: linear-gradient(180deg, #3b82f6, var(--blue2));
-      color: white;
-      box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
-    }
-    .btn-primary:hover{ filter: brightness(1.04); }
-
-    .btn-ghost{
-      background: #fff;
-      color: var(--text);
-      border: 1px solid rgba(15,23,42,.12);
-    }
-    .btn-ghost:hover{ filter: brightness(0.98); }
-
-    .btn-success{
-      background: linear-gradient(180deg, #22c55e, #16a34a);
-      color: white;
-      box-shadow: 0 10px 22px rgba(22, 163, 74, 0.18);
-    }
-    .btn-success:hover{ filter: brightness(1.04); }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 16px;
-      margin-top: 16px;
-    }
-    @media (max-width: 960px){
-      .grid{ grid-template-columns: 1fr; }
-      .btnrow{ justify-content:flex-start; }
-    }
-
-    .card{
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      border-radius: var(--r20);
-      padding: 18px;
-      box-shadow: var(--shadow2);
-    }
-
-    .section-title{
-      margin: 0 0 4px;
-      font-size: 16px;
-      letter-spacing: .2px;
-      font-weight: 800;
-    }
-    .section-sub{
-      margin: 0 0 14px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .row{
-      display:flex;
-      gap: 10px;
+    .kombiblock {
+      background: #f8f9fa;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
       margin-bottom: 10px;
-      align-items:center;
     }
-
-    .field{
-      flex: 1;
-      display:flex;
-      align-items:center;
-      gap: 8px;
-    }
-    .field.small{ flex: .6; }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      background: rgba(15,23,42,.06);
-      color: var(--muted);
-      font-weight: 900;
-      font-size: 12px;
-      border: 1px solid rgba(15,23,42,.08);
-      flex: 0 0 auto;
-    }
-
-    input{
-      width: 100%;
-      border: 1px solid rgba(15, 23, 42, 0.12);
-      border-radius: 999px;
-      padding: 11px 14px;
-      font-size: 14px;
-      outline: none;
-      transition: box-shadow .15s ease, border-color .15s ease;
-      background: #fff;
-    }
-    input:focus{
-      border-color: rgba(37,99,235,.45);
-      box-shadow: 0 0 0 4px rgba(37,99,235,.10);
-    }
-
-    .hr{
-      height:1px;
-      background: rgba(15, 23, 42, 0.08);
-      margin: 14px 0;
-    }
-
-    .settings{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-    @media (max-width: 720px){
-      .settings{ grid-template-columns: 1fr; }
-    }
-
-    .actions{
-      display:flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-      align-items:flex-end;
-    }
-    .actions .grow{ flex: 1 1 320px; min-width: 240px; }
-
-    .hint{
-      color: var(--muted);
-      font-size: 12.5px;
-      margin-top: 8px;
-    }
-
-    .alert{
-      margin-top: 12px;
-      padding: 12px 12px;
-      border-radius: var(--r16);
-      background: var(--warnBg);
-      border: 1px solid var(--warnStroke);
-      color: #7c5a00;
-      font-weight: 700;
-      font-size: 13px;
-    }
-
-    .result{
-      border-radius: var(--r20);
-      padding: 14px;
-      border: 1px solid var(--stroke);
-      background: #fff;
-      margin-bottom: 12px;
-    }
-    .result.pos{
-      background: var(--posBg);
-      border-color: var(--posStroke);
-    }
-    .result.neg{
-      background: var(--negBg);
-      border-color: var(--negStroke);
-    }
-
-    .result-head{
-      display:flex;
-      justify-content:space-between;
-      gap: 10px;
-      align-items:flex-start;
-      margin-bottom: 8px;
-    }
-    .result-title{
-      font-weight: 900;
-      font-size: 14.5px;
-      margin: 0;
-    }
-    .badge{
-      border-radius: 999px;
-      padding: 7px 12px;
-      font-weight: 900;
-      font-size: 12px;
-      border: 1px solid rgba(15,23,42,.10);
-      background: rgba(255,255,255,.85);
-    }
-    .badge.pos{ color: var(--pos); border-color: var(--posStroke); }
-    .badge.neg{ color: var(--neg); border-color: var(--negStroke); }
-
-    .mono{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-                   "Liberation Mono","Courier New", monospace;
-    }
-    .kv{
-      color: var(--muted);
-      font-size: 13px;
-      margin: 6px 0 0;
-      line-height: 1.35;
-    }
-    .kv strong{ color: var(--text); font-weight: 900; }
-
-    .empty{
-      color: var(--muted);
-      font-size: 13.5px;
-      line-height: 1.35;
-      margin: 0;
+    .kombigruppe-header {
+      background-color: #007bff;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
     }
   </style>
 </head>
-
 <body>
-  <div id="root"></div>
+  <div class="container py-4">
+    <h1 class="text-center text-danger">Drahtkombination</h1>
 
-  <script>
-    const e = React.createElement;
+    <div id="drahtEingabe" class="mb-3">
+      <!-- 5 Eingabezeilen für Durchmesser und Anzahl -->
+      <div class="row mb-2">
+        <div class="col"><input type="number" step="0.01" class="form-control durchmesser" placeholder="Durchmesser (mm)"></div>
+        <div class="col"><input type="number" class="form-control anzahl" placeholder="Anzahl"></div>
+      </div>
+      <div class="row mb-2">
+        <div class="col"><input type="number" step="0.01" class="form-control durchmesser" placeholder="Durchmesser (mm)"></div>
+        <div class="col"><input type="number" class="form-control anzahl" placeholder="Anzahl"></div>
+      </div>
+      <div class="row mb-2">
+        <div class="col"><input type="number" step="0.01" class="form-control durchmesser" placeholder="Durchmesser (mm)"></div>
+        <div class="col"><input type="number" class="form-control anzahl" placeholder="Anzahl"></div>
+      </div>
+      <div class="row mb-2">
+        <div class="col"><input type="number" step="0.01" class="form-control durchmesser" placeholder="Durchmesser (mm)"></div>
+        <div class="col"><input type="number" class="form-control anzahl" placeholder="Anzahl"></div>
+      </div>
+      <div class="row mb-3">
+        <div class="col"><input type="number" step="0.01" class="form-control durchmesser" placeholder="Durchmesser (mm)"></div>
+        <div class="col"><input type="number" class="form-control anzahl" placeholder="Anzahl"></div>
+      </div>
+    </div>
 
-    function area(d){ return Math.PI * d * d / 4; }
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <button class="btn btn-success" onclick="berechneZiel()">🧮 Berechnen</button>
+        <button class="btn btn-outline-secondary" onclick="neueBerechnung()">♻️ Neue Berechnung</button>
 
-    function App(){
-      const [rows, setRows] = React.useState(Array(4).fill({ d:"", n:"" }));
-      const [maxDev, setMaxDev] = React.useState(10);
-      const [tolMinus, setTolMinus] = React.useState(0.2);
-      const [tolPlus, setTolPlus] = React.useState(0.2);
-      const [pdfName, setPdfName] = React.useState("");
-      const [results, setResults] = React.useState([]);
-      const [status, setStatus] = React.useState("");
+      <button class="btn btn-warning">🖨️ PDF Ausgabe</button>
+      <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#lagerVerwaltung">📦 Lager</button>
+    </div>
 
-      function updateRow(i, key, val){
-        const next = [...rows];
-        next[i] = { ...next[i], [key]: val };
-        setRows(next);
-      }
+    <div class="alert alert-info text-center" id="gesamtQuerschnitt">
+      Gesamtquerschnitt: <strong>0.0000 mm²</strong>
+    </div>
 
-      function resetAll(){
-        setRows(Array(4).fill({ d:"", n:"" }));
-        setMaxDev(10);
-        setTolMinus(0.2);
-        setTolPlus(0.2);
-        setPdfName("");
-        setResults([]);
-        setStatus("");
-      }
+    <div class="mb-4">
+      <label class="form-label fw-bold">Abweichung:</label>
+      <div class="row g-2 mb-2">
+        <div class="col-md-4">
+          <label for="abweichungUnter" class="form-label">Unterhalb (mm):</label>
+          <input type="number" step="0.01" id="abweichungUnter" class="form-control" value="0.2">
+        </div>
+        <div class="col-md-4">
+          <label for="abweichungOber" class="form-label">Oberhalb (mm):</label>
+          <input type="number" step="0.01" id="abweichungOber" class="form-control" value="0.2">
+        </div>
+        <div class="col-md-4">
+          <label for="abweichungProzent" class="form-label">Abweichung Zielquerschnitt (%):</label>
+          <input type="number" step="0.1" id="abweichungProzent" class="form-control" value="10">
+        </div>
+      </div>
+    </div>
 
-      function calculate(){
-        setStatus("");
-        let stock = [];
-        let minD = Infinity;
-        let maxD = -Infinity;
+    <div>
+      <div class="kombigruppe mb-3">
+        <div class="kombigruppe-header" data-bs-toggle="collapse" data-bs-target="#positivKombis" aria-expanded="true">
+          🔺 Kombinationen mit größerem Querschnitt
+        </div>
+        <div class="collapse show" id="positivKombis">
+          <div class="kombiliste" id="kombisPositiv"></div>
+        </div>
+      </div>
 
-        rows.forEach(r => {
-          const d = parseFloat(String(r.d).replace(",", "."));
-          const n = parseInt(String(r.n), 10);
-          if (!isNaN(d) && !isNaN(n) && n > 0){
-            minD = Math.min(minD, d);
-            maxD = Math.max(maxD, d);
-            for (let i=0;i<n;i++) stock.push(d);
-          }
-        });
+      <div class="kombigruppe mb-3">
+        <div class="kombigruppe-header" data-bs-toggle="collapse" data-bs-target="#negativKombis" aria-expanded="true">
+          🔻 Kombinationen mit kleinerem Querschnitt
+        </div>
+        <div class="collapse show" id="negativKombis">
+          <div class="kombiliste" id="kombisNegativ"></div>
+        </div>
+      </div>
+    </div>
 
-        if (!stock.length || !isFinite(minD)){
-          setResults([]);
-          setStatus("Bitte mindestens einen Draht-Durchmesser + Anzahl eingeben.");
-          return;
-        }
+    <div class="collapse" id="lagerVerwaltung">
+      <div class="card card-body">
+        <h5>Lagerverwaltung</h5>
+        <div class="input-group mb-2">
+          <input type="number" step="0.01" class="form-control" placeholder="Neuer Drahtdurchmesser" id="lagerEingabe">
+          <button class="btn btn-success" onclick="lagerHinzufuegen()">➕ Hinzufügen</button>
+        </div>
+        <div id="lagerListe" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+<script>
+  let lager = [];
 
-        // Bereich min/max ± Toleranz
-        const minAllowed = minD - tolMinus;
-        const maxAllowed = maxD + tolPlus;
-        stock = stock.filter(d => d >= minAllowed && d <= maxAllowed);
+  function speichernLager() {
+    localStorage.setItem('drahtlager', JSON.stringify(lager));
+  }
 
-        if (!stock.length){
-          setResults([]);
-          setStatus("Keine Drähte im zulässigen Bereich (min/max ± Toleranz).");
-          return;
-        }
+  function lagerAnzeigen() {
+    const liste = document.getElementById('lagerListe');
+    liste.innerHTML = '';
 
-        const target = area(minD);
-
-        // Suche: max 1000 Kombis, max 5 Drähte
-        let combis = [];
-        for (let i=0; i<stock.length && combis.length<1000; i++){
-          let sum = 0;
-          let used = [];
-          for (let j=i; j<stock.length; j++){
-            if (used.length >= 5) break; // ✅ max 5
-            sum += area(stock[j]);
-            used.push(stock[j]);
-
-            const dev = (sum - target) / target * 100;
-            if (Math.abs(dev) <= maxDev){
-              combis.push({ used:[...used], dev });
-            }
-          }
-        }
-
-        if (!combis.length){
-          setResults([]);
-          setStatus("Keine Kombination innerhalb der Abweichung gefunden (ggf. Abweichung erhöhen).");
-          return;
-        }
-
-        const plusList = combis.filter(c => c.dev >= 0).sort((a,b) => a.dev - b.dev);
-        const minusList = combis.filter(c => c.dev < 0).sort((a,b) => b.dev - a.dev);
-
-        let out = [];
-
-        // ✅ Kombi 1/2 Logik inkl. Fallback (wenn keine negativen existieren -> zweitbeste positive)
-        if (plusList.length > 0){
-          out.push({ ...plusList[0], title: "Kombination 1 (beste positive)" });
-
-          if (minusList.length > 0){
-            out.push({ ...minusList[0], title: "Kombination 2 (beste negative)" });
-          } else if (plusList.length > 1){
-            out.push({ ...plusList[1], title: "Kombination 2 (positiv)" });
-          }
-
-        } else if (minusList.length > 0){
-          out.push({ ...minusList[0], title: "Kombination 1 (beste negative)" });
-
-          if (minusList.length > 1){
-            out.push({ ...minusList[1], title: "Kombination 2 (negativ)" });
-          }
-        }
-
-        setResults(out);
-      }
-
-      function savePDF(){
-        alert("PDF speichern: " + (pdfName || "drahtkombination"));
-      }
-
-      return e("div", { className:"wrap" },
-
-        e("div", { className:"topbar" },
-          e("div", null,
-            e("h1", null, "Drahtkombinator"),
-            e("p", { className:"subtitle" },
-              "Apple-Look wie heute zu Beginn. Farben für positiv/negativ. Max. 5 Drähte. Nur 1 PDF-Button."
-            )
-          ),
-          e("div", { className:"btnrow" },
-            e("button", { className:"btn-primary", onClick: calculate }, "Berechnen"),
-            e("button", { className:"btn-ghost", onClick: resetAll }, "Reset")
-          )
-        ),
-
-        e("div", { className:"grid" },
-
-          e("div", { className:"card" },
-            e("div", null,
-              e("div", { className:"section-title" }, "Lagerbestand"),
-              e("div", { className:"section-sub" }, "Bis zu 4 Zeilen: Durchmesser (mm) + Anzahl")
-            ),
-
-            rows.map((r,i) =>
-              e("div", { key:i, className:"row" },
-                e("div", { className:"field" },
-                  e("span", { className:"chip" }, "Ø"),
-                  e("input", {
-                    placeholder:"Durchmesser (mm)",
-                    value:r.d,
-                    onChange: ev => updateRow(i, "d", ev.target.value)
-                  })
-                ),
-                e("div", { className:"field small" },
-                  e("span", { className:"chip" }, "x"),
-                  e("input", {
-                    placeholder:"Anzahl",
-                    value:r.n,
-                    onChange: ev => updateRow(i, "n", ev.target.value)
-                  })
-                )
-              )
-            ),
-
-            e("div", { className:"hr" }),
-
-            e("div", { className:"settings" },
-              e("div", null,
-                e("div", { className:"section-sub" }, "Max. Abweichung (%)"),
-                e("input", { type:"number", value:maxDev, onChange: ev => setMaxDev(+ev.target.value) })
-              ),
-              e("div", null,
-                e("div", { className:"section-sub" }, "Toleranz − (mm)"),
-                e("input", { type:"number", step:"0.1", value:tolMinus, onChange: ev => setTolMinus(+ev.target.value) })
-              ),
-              e("div", null,
-                e("div", { className:"section-sub" }, "Toleranz + (mm)"),
-                e("input", { type:"number", step:"0.1", value:tolPlus, onChange: ev => setTolPlus(+ev.target.value) })
-              )
-            ),
-
-            e("div", { className:"actions" },
-              e("div", { className:"grow" },
-                e("div", { className:"section-sub" }, "PDF-Dateiname (optional)"),
-                e("input", {
-                  placeholder:"z.B. drahtkombination_01",
-                  value: pdfName,
-                  onChange: ev => setPdfName(ev.target.value)
-                }),
-                e("div", { className:"hint" }, "Hinweis: PDF ist aktuell ein Platzhalter (können wir als Nächstes fix fertig machen).")
-              ),
-              e("button", { className:"btn-success", onClick: savePDF }, "Als PDF speichern")
-            ),
-
-            status ? e("div", { className:"alert" }, status) : null
-          ),
-
-          e("div", { className:"card" },
-            e("div", { className:"section-title" }, "Ergebnisse"),
-            e("div", { className:"section-sub" }, "Die 2 relevantesten Kombinationen"),
-
-            results.length === 0
-              ? e("p", { className:"empty" },
-                  "Noch keine Ergebnisse. Klicke auf ",
-                  e("strong", null, "Berechnen"),
-                  "."
-                )
-              : null,
-
-            results.map((r, idx) => {
-              const isPos = r.dev >= 0;
-              return e("div", { key: idx, className: "result " + (isPos ? "pos" : "neg") },
-                e("div", { className:"result-head" },
-                  e("p", { className:"result-title" }, r.title),
-                  e("span", { className: "badge " + (isPos ? "pos" : "neg") }, isPos ? "positiv" : "negativ")
-                ),
-                e("p", { className:"kv" },
-                  "Drähte: ",
-                  e("strong", { className:"mono" }, r.used.join(", ") + " mm"),
-                  " (", e("strong", null, r.used.length), "x)"
-                ),
-                e("p", { className:"kv" },
-                  "Abweichung: ",
-                  e("strong", { className:"mono" }, r.dev.toFixed(2) + " %")
-                )
-              );
-            })
-          )
-
-        )
-      );
+    if (!lager.length) {
+      liste.innerHTML = '<div class="text-muted">(Noch keine Drähte im Lager)</div>';
+      return;
     }
 
-    ReactDOM.createRoot(document.getElementById("root")).render(e(App));
-  </script>
+    lager.sort((a, b) => a.d - b.d);
+
+    lager.forEach((eintrag, index) => {
+      const zeile = document.createElement('div');
+      zeile.className = 'd-flex justify-content-between align-items-center mb-2';
+
+      const text = document.createElement('span');
+      text.textContent = `${eintrag.d.toFixed(2)} mm`;
+
+      const btns = document.createElement('div');
+      btns.className = 'btn-group';
+
+      const aktiv = eintrag.aktiv !== false;
+
+      const aktivBtn = document.createElement('button');
+      aktivBtn.className = 'btn btn-sm ' + (aktiv ? 'btn-success' : 'btn-danger');
+      aktivBtn.textContent = aktiv ? 'Aktiv' : 'Inaktiv';
+      aktivBtn.onclick = () => {
+        lager[index].aktiv = !lager[index].aktiv;
+        speichernLager();
+        lagerAnzeigen();
+      };
+
+      const loeschBtn = document.createElement('button');
+      loeschBtn.className = 'btn btn-sm btn-outline-danger';
+      loeschBtn.textContent = 'Löschen';
+      loeschBtn.onclick = () => {
+        lager.splice(index, 1);
+        speichernLager();
+        lagerAnzeigen();
+      };
+
+      btns.appendChild(aktivBtn);
+      btns.appendChild(loeschBtn);
+      zeile.appendChild(text);
+      zeile.appendChild(btns);
+      liste.appendChild(zeile);
+    });
+  }
+
+  function lagerHinzufuegen() {
+    const eingabe = document.getElementById('lagerEingabe');
+    const wert = Number(eingabe.value);
+
+    // Validierung: positive Zahl
+    if (!Number.isFinite(wert) || wert <= 0) {
+      eingabe.focus();
+      return;
+    }
+
+    // Optional: keine Duplikate (wenn du das NICHT willst, diese 5 Zeilen entfernen)
+    const exists = lager.some(e => Math.abs(e.d - wert) < 1e-9);
+    if (exists) {
+      eingabe.value = '';
+      return;
+    }
+
+    lager.push({ d: wert, aktiv: true });
+    speichernLager();
+    lagerAnzeigen();
+    eingabe.value = '';
+  }
+
+  function neueBerechnung() {
+  // Eingabefelder leeren
+  document.querySelectorAll('.durchmesser, .anzahl').forEach(el => el.value = '');
+
+  // Ergebnisanzeige zurücksetzen
+  document.getElementById('gesamtQuerschnitt').innerHTML =
+    'Gesamtquerschnitt: <strong>0.0000 mm²</strong>';
+
+  // Kombi-Ausgaben leeren
+  document.getElementById('kombisPositiv').innerHTML = '';
+  document.getElementById('kombisNegativ').innerHTML = '';
+
+  // Optional: Fokus auf erstes Feld
+  const first = document.querySelector('.durchmesser');
+  if (first) first.focus();
+}
+
+
+  function berechneZiel() {
+    const dInputs = document.querySelectorAll('.durchmesser');
+    const nInputs = document.querySelectorAll('.anzahl');
+
+    let summe = 0;
+    let minEingabe = Infinity;
+    let maxEingabe = -Infinity;
+
+    for (let i = 0; i < dInputs.length; i++) {
+      const dVal = dInputs[i].value.trim();
+      const nVal = nInputs[i].value.trim();
+      if (dVal === '' || nVal === '') continue;
+
+      const d = Number(dVal);
+      const n = Number(nVal);
+
+      // Validierung
+      if (!Number.isFinite(d) || d <= 0) continue;
+      if (!Number.isInteger(n) || n <= 0) continue;
+
+      const a = n * Math.PI * Math.pow(d / 2, 2);
+      summe += a;
+      if (d < minEingabe) minEingabe = d;
+      if (d > maxEingabe) maxEingabe = d;
+    }
+
+    // Edge case: nichts eingegeben
+    if (!Number.isFinite(summe) || summe <= 0 || !isFinite(minEingabe) || !isFinite(maxEingabe)) {
+      document.getElementById('gesamtQuerschnitt').innerHTML =
+        `Gesamtquerschnitt: <strong>0.0000 mm²</strong>`;
+      document.getElementById('kombisPositiv').innerHTML = '';
+      document.getElementById('kombisNegativ').innerHTML = '';
+      return;
+    }
+
+    const ziel = summe;
+    document.getElementById('gesamtQuerschnitt').innerHTML =
+      `Gesamtquerschnitt: <strong>${ziel.toFixed(4)} mm²</strong>`;
+
+    berechneKombinationen(ziel, minEingabe, maxEingabe);
+  }
+
+  function berechneKombinationen(ziel, minE, maxE) {
+    const abwMMU = Number(document.getElementById('abweichungUnter').value);
+    const abwMMO = Number(document.getElementById('abweichungOber').value);
+    const abwProzent = Number(document.getElementById('abweichungProzent').value);
+
+    const safeAbwMMU = Number.isFinite(abwMMU) ? abwMMU : 0;
+    const safeAbwMMO = Number.isFinite(abwMMO) ? abwMMO : 0;
+    const safeAbwProzent = Number.isFinite(abwProzent) ? abwProzent : 0;
+
+    const dMin = minE - safeAbwMMU;
+    const dMax = maxE + safeAbwMMO;
+    const delta = ziel * (safeAbwProzent / 100);
+
+    const aktiveD = lager.filter(e =>
+      e.aktiv && Number.isFinite(e.d) && e.d >= dMin && e.d <= dMax
+    );
+
+    // Unique Durchmesser
+    const dList = [...new Set(aktiveD.map(e => e.d))].sort((a, b) => a - b);
+
+    const outPos = document.getElementById('kombisPositiv');
+    const outNeg = document.getElementById('kombisNegativ');
+    outPos.innerHTML = '';
+    outNeg.innerHTML = '';
+
+    if (!dList.length) {
+      outPos.innerHTML = '<div class="text-muted">Keine aktiven Lagerdrähte im passenden Durchmesserbereich.</div>';
+      outNeg.innerHTML = '<div class="text-muted">Keine aktiven Lagerdrähte im passenden Durchmesserbereich.</div>';
+      return;
+    }
+
+    // Fläche pro Durchmesser vorrechnen (schneller)
+    const areaByD = new Map();
+    for (const d of dList) {
+      areaByD.set(d, Math.PI * Math.pow(d / 2, 2));
+    }
+
+    // Darstellung
+    function kombiText(kombi) {
+      const zaehler = new Map();
+      for (const d of kombi) zaehler.set(d, (zaehler.get(d) || 0) + 1);
+
+      return [...zaehler.entries()]
+        .sort((a, b) => a[0] - b[0])
+        .map(([d, n]) => `${n}x ${Number(d).toFixed(2)} mm`)
+        .join('<br>');
+    }
+
+    function erstelleBlock(kombi, querschnitt) {
+      const abw = querschnitt - ziel;
+      const abwRel = (abw / ziel) * 100;
+      return `
+        <div class="kombiblock">
+          ${kombiText(kombi)}<br>
+          <strong>${querschnitt.toFixed(4)} mm²</strong><br>
+          Abweichung: ${abwRel.toFixed(2)}% (${abw.toFixed(4)} mm²)
+        </div>`;
+    }
+
+    // Top-Listen statt alles sammeln (spart extrem)
+    const topPos = []; // {draehte, q, diffAbs, len}
+    const topNeg = [];
+
+    function tryInsert(list, candidate, limit = 5) {
+      list.push(candidate);
+      list.sort((a, b) => a.diffAbs - b.diffAbs || a.len - b.len);
+      if (list.length > limit) list.pop();
+    }
+
+    // Für Pruning: kleinste/größte Einzelfläche
+    const minArea = areaByD.get(dList[0]);
+    const maxArea = areaByD.get(dList[dList.length - 1]);
+
+    // Rekursion mit running sum + early pruning
+    function dfs(kombi, startIndex, currentSum) {
+      const len = kombi.length;
+
+      if (len > 0) {
+        const diff = currentSum - ziel;
+        const diffAbs = Math.abs(diff);
+
+        if (diffAbs <= delta) {
+          const candidate = { draehte: [...kombi], q: currentSum, diffAbs, len };
+          if (diff >= 0) tryInsert(topPos, candidate);
+          else tryInsert(topNeg, candidate);
+        }
+      }
+
+      if (len >= 5) return;
+
+      // Early pruning:
+      // Wenn wir bereits zu groß sind (über ziel+delta), wird’s nur noch größer → abbrechen
+      if (currentSum > ziel + delta) return;
+
+      // Wenn wir selbst mit maximaler Auffüllung nicht mehr in Reichweite kommen, abbrechen
+      // maxRest = (5-len)*maxArea, minRest = (5-len)*minArea
+      const rest = 5 - len;
+      const bestPossibleMax = currentSum + rest * maxArea;
+      const bestPossibleMin = currentSum + rest * minArea;
+
+      // Wenn selbst mit maximaler Ergänzung unterhalb (ziel-delta) bleiben → sinnlos
+      if (bestPossibleMax < ziel - delta) return;
+      // Wenn selbst mit minimaler Ergänzung über (ziel+delta) liegen würde → ab nächstem Schritt eher sinnlos,
+      // aber wir prüfen ohnehin currentSum > ziel+delta oben; hier lassen wir laufen, weil wir evtl. noch knapp werden.
+
+      for (let i = startIndex; i < dList.length; i++) {
+        const d = dList[i];
+        const a = areaByD.get(d);
+        kombi.push(d);
+        dfs(kombi, i, currentSum + a); // i → Wiederholungen erlaubt
+        kombi.pop();
+      }
+    }
+
+    dfs([], 0, 0);
+
+    // Ausgabe
+    if (!topPos.length) {
+      outPos.innerHTML = '<div class="text-muted">Keine passenden Kombinationen gefunden.</div>';
+    } else {
+      outPos.innerHTML = topPos.map(k => erstelleBlock(k.draehte, k.q)).join('');
+    }
+
+    if (!topNeg.length) {
+      outNeg.innerHTML = '<div class="text-muted">Keine passenden Kombinationen gefunden.</div>';
+    } else {
+      outNeg.innerHTML = topNeg.map(k => erstelleBlock(k.draehte, k.q)).join('');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const gespeicherte = localStorage.getItem('drahtlager');
+    if (gespeicherte) {
+      try {
+        lager = JSON.parse(gespeicherte).map(e => ({
+          d: Number(e.d),
+          aktiv: e.aktiv !== false
+        })).filter(e => Number.isFinite(e.d) && e.d > 0);
+      } catch {
+        lager = [];
+      }
+    }
+    lagerAnzeigen();
+  });
+</script>
+
+
 </body>
 </html>
