@@ -16,6 +16,12 @@
     h2, h3, h4 {
       color: #2c3e50;
     }
+    .entry-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
     input, button {
       margin: 4px;
       padding: 8px;
@@ -23,22 +29,21 @@
       border: 1px solid #ccc;
       font-size: 1em;
     }
-    input:focus {
-      outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 3px rgba(52, 152, 219, 0.5);
+    input {
+      width: 120px;
+      max-width: 45%;
     }
     button {
       background-color: #3498db;
       color: white;
-      cursor: pointer;
       border: none;
+      cursor: pointer;
     }
     button:hover {
       background-color: #2980b9;
     }
     .stock-item {
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .warning {
       color: red;
@@ -48,21 +53,12 @@
     .info {
       font-size: 0.9em;
       color: #555;
-      margin: 10px 0;
-    }
-    .combination {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      padding: 12px;
-      margin: 10px 0;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-
 <div id="root"></div>
-
 <script>
 const e = React.createElement;
 
@@ -165,20 +161,21 @@ function App() {
     }
 
     const maxDevPercent = parseFloat(maxDev.replace(',', '.'));
-    const minTol = minOriginal - parseFloat(minOffset.replace(',', '.'));
-    const maxTol = maxOriginal + parseFloat(maxOffset.replace(',', '.'));
+    const minTol = parseFloat(minOffset.replace(',', '.'));
+    const maxTol = parseFloat(maxOffset.replace(',', '.'));
+    if (isNaN(maxDevPercent) || isNaN(minTol) || isNaN(maxTol)) return;
 
-    const activeStock = stock.filter(s => s.a);
-    const validStock = activeStock.filter(s => s.d >= minTol && s.d <= maxTol);
+    const minAllowed = minOriginal - minTol;
+    const maxAllowed = maxOriginal + maxTol;
+    const activeStock = stock.filter(s => s.a && s.d >= minAllowed && s.d <= maxAllowed);
 
     const allCombos = [];
     let comboCount = 0;
     outer: for (let len = 1; len <= totalCount; len++) {
-      const combos = combine(validStock, len);
+      const combos = combine(activeStock, len);
       for (let c of combos) {
         comboCount++;
         if (comboCount > 1000) break outer;
-
         const grp = {};
         c.forEach(x => grp[x.d] = (grp[x.d] || 0) + 1);
         const cross = c.reduce((sum, x) => sum + calculateCrossSection(x.d), 0);
@@ -208,14 +205,22 @@ function App() {
       setMessage('⚠️ Es konnte keine einzige Kombination aus dem aktuellen Lager gebildet werden.');
       setResults([]);
     } else {
-      setResults(filtered.slice(0, 5));
+      const pos = filtered.find(c => c.dev >= 0);
+      const neg = filtered.find(c => c.dev <= 0);
+      const rest = filtered.filter(c => c !== pos && c !== neg);
+      const resultList = [];
+      if (pos) resultList.push(pos);
+      if (neg && neg !== pos) resultList.push(neg);
+      resultList.push(...rest.slice(0, 3));
+      setMessage(missingDiameters.length ? message : '');
+      setResults(resultList);
     }
   }
 
   return e('div', null,
     e('h2', null, 'Drahtkombinator'),
     entries.map((en, i) =>
-      e('div', { key: i },
+      e('div', { className: 'entry-row', key: i },
         e('input', {
           placeholder: 'Durchmesser mm',
           value: en.d,
@@ -228,32 +233,31 @@ function App() {
         })
       )
     ),
-    e('div', { style: { marginTop: '12px' } },
-      e('label', { htmlFor: 'maxDev' }, 'Max. Abweichung [%]:'),
+    e('div', null,
+      e('label', null, 'Max. Abweichung [%]: '),
       e('input', {
-        id: 'maxDev',
         type: 'number',
-        style: { width: '60px' },
         value: maxDev,
-        onChange: e => setMaxDev(e.target.value)
+        onChange: e => setMaxDev(e.target.value),
+        style: { width: '60px' }
       }),
+      e('label', { style: { marginLeft: '10px' } }, '− Toleranz:'),
       e('input', {
         type: 'number',
-        placeholder: '- Offset (z.B. 0.2)',
         value: minOffset,
         onChange: e => setMinOffset(e.target.value),
-        style: { width: '80px', marginLeft: '10px' }
+        style: { width: '60px' }
       }),
+      e('label', { style: { marginLeft: '10px' } }, '+ Toleranz:'),
       e('input', {
         type: 'number',
-        placeholder: '+ Offset (z.B. 0.2)',
         value: maxOffset,
         onChange: e => setMaxOffset(e.target.value),
-        style: { width: '80px', marginLeft: '10px' }
+        style: { width: '60px' }
       })
     ),
     e('div', { className: 'info' },
-      'Kombinationen mit max. ±' + maxDev + '% Abweichung, nur Drähte zwischen (min-' + minOffset + ') mm und (max+' + maxOffset + ') mm werden verwendet.'
+      'Nur Kombinationen mit max. ±' + maxDev + '% Abweichung werden angezeigt.'
     ),
     e('div', null,
       e('button', { onClick: calc }, 'Berechnen'),
@@ -299,17 +303,17 @@ function App() {
       )
     ),
     total > 0 && e('div', null,
-      e('p', null, 'Original Gesamtquerschnitt: ' + total.toFixed(4) + ' mm²'),
+      e('p', null, 'Original Gesamt: ' + total.toFixed(4) + ' mm²'),
       message && e('p', { className: 'warning' }, message),
       results.map((r, idx) =>
-        e('div', { key: idx, className: 'combination' },
+        e('div', { key: idx, style: { border: '1px solid #ccc', margin: '6px', padding: '6px', borderRadius: '8px', backgroundColor: '#fff' } },
           e('h4', null, 'Kombination ' + (idx + 1)),
           e('ul', null,
             Object.entries(r.grouped).map(([dia, count]) =>
               e('li', null, count + ' x ' + dia + ' mm')
             )
           ),
-          e('p', null, 'Gesamtquerschnitt: ' + r.cross.toFixed(4) + ' mm²'),
+          e('p', null, 'Gesamt: ' + r.cross.toFixed(4) + ' mm²'),
           e('p', null, 'Abweichung: ' +
             (r.dev >= 0 ? '+' : '') + r.dev.toFixed(4) + ' mm² (' +
             (r.devPercent >= 0 ? '+' : '') + r.devPercent.toFixed(2) + '%)')
@@ -321,6 +325,5 @@ function App() {
 
 ReactDOM.render(e(App), document.getElementById('root'));
 </script>
-
 </body>
 </html>
