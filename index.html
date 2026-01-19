@@ -345,7 +345,7 @@ function App() {
             idx === 0 && r.dev < 0  ? 'Kombination 1 (Abweichung negativ)' :
             idx === 1 && r.dev >= 0 ? 'Kombination 2 (Abweichung positiv)' :
             idx === 1 && r.dev < 0  ? 'Kombination 2 (Abweichung negativ)' :
-            'Kombination ' + (idx + 1)
+            `Kombination ${idx + 1} (Abweichung ${r.dev >= 0 ? 'positiv' : 'negativ'})`
           ),
           e('ul', null,
             Object.entries(r.grouped).map(([dia, count]) =>
