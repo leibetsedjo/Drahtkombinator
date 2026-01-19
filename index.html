@@ -279,6 +279,13 @@ function App() {
         },
         style: { marginLeft: '10px', backgroundColor: '#e67e22' }
       }, 'Neue Berechnung starten'),
+      e('button', {
+        onClick: () => {
+          alert('Tipp: Du kannst beim Speichern selbst den Namen eingeben, z. B.: "Drahtkombination.pdf"');
+          window.print();
+        },
+        style: { marginLeft: '10px', backgroundColor: '#16a085' }
+      }, 'Als PDF speichern'),
       e('input', {
         placeholder: 'Dateiname für PDF (optional)',
         id: 'pdfName',
