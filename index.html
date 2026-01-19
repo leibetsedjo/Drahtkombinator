@@ -155,16 +155,14 @@ function App() {
 
     setTotal(tot);
     if (missingDiameters.length > 0) {
-      setMessage('Hinweis: Folgende Durchmesser sind nicht im Lager vorhanden und werden durch passende ersetzt: ' + missingDiameters.join(', ') + ' mm');
+      setMessage('Hinweis: Diese Durchmesser fehlen im Lager und werden ersetzt: ' + missingDiameters.join(', ') + ' mm');
     } else {
       setMessage('');
     }
 
-    const maxDevPercent = parseFloat(maxDev.replace(',', '.'));
-    const minTol = parseFloat(minOffset.replace(',', '.'));
-    const maxTol = parseFloat(maxOffset.replace(',', '.'));
-    if (isNaN(maxDevPercent) || isNaN(minTol) || isNaN(maxTol)) return;
-
+    const maxDevPercent = parseFloat(maxDev);
+    const minTol = parseFloat(minOffset);
+    const maxTol = parseFloat(maxOffset);
     const minAllowed = minOriginal - minTol;
     const maxAllowed = maxOriginal + maxTol;
     const activeStock = stock.filter(s => s.a && s.d >= minAllowed && s.d <= maxAllowed);
@@ -191,19 +189,11 @@ function App() {
       }
     }
 
-    allCombos.sort((a, b) => {
-      if (a.devPercent !== b.devPercent) return a.devPercent - b.devPercent;
-      return a.types - b.types;
-    });
-
+    allCombos.sort((a, b) => a.devPercent - b.devPercent || a.types - b.types);
     const filtered = allCombos.filter(c => c.devPercent <= maxDevPercent);
-
     if (filtered.length === 0 && allCombos.length > 0) {
-      setMessage('Keine passende Kombination innerhalb der Abweichung gefunden. Hier die besten Alternativen:');
+      setMessage('Keine passende Kombination gefunden. Beste Alternativen:');
       setResults(allCombos.slice(0, 5));
-    } else if (filtered.length === 0 && allCombos.length === 0) {
-      setMessage('⚠️ Es konnte keine einzige Kombination aus dem aktuellen Lager gebildet werden.');
-      setResults([]);
     } else {
       const pos = filtered.find(c => c.dev >= 0);
       const neg = filtered.find(c => c.dev <= 0);
@@ -212,7 +202,6 @@ function App() {
       if (pos) resultList.push(pos);
       if (neg && neg !== pos) resultList.push(neg);
       resultList.push(...rest.slice(0, 3));
-      setMessage(missingDiameters.length ? message : '');
       setResults(resultList);
     }
   }
@@ -264,12 +253,7 @@ function App() {
       e('button', { onClick: () => setShowStock(s => !s) }, 'Lager anzeigen/verstecken'),
       e('button', {
         onClick: () => {
-          setEntries([
-            { d: '', c: '' },
-            { d: '', c: '' },
-            { d: '', c: '' },
-            { d: '', c: '' }
-          ]);
+          setEntries([{ d: '', c: '' }, { d: '', c: '' }, { d: '', c: '' }, { d: '', c: '' }]);
           setResults([]);
           setMessage('');
           setTotal(0);
@@ -279,18 +263,6 @@ function App() {
         },
         style: { marginLeft: '10px', backgroundColor: '#e67e22' }
       }, 'Neue Berechnung starten'),
-      e('button', {
-        onClick: () => {
-          alert('Tipp: Du kannst beim Speichern selbst den Namen eingeben, z. B.: "Drahtkombination.pdf"');
-          window.print();
-        },
-        style: { marginLeft: '10px', backgroundColor: '#16a085' }
-      }, 'Als PDF speichern'),
-      e('input', {
-        placeholder: 'Dateiname für PDF (optional)',
-        id: 'pdfName',
-        style: { marginLeft: '10px', padding: '6px', width: '200px' }
-      }),
       e('button', {
         onClick: () => {
           alert('Tipp: Du kannst beim Speichern selbst den Namen eingeben, z. B.: "Drahtkombination.pdf"');
