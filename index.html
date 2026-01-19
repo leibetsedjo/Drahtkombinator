@@ -5,49 +5,211 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Drahtkombinator</title>
 
-  <!-- ✅ Bootstrap 5 (modernes Design) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap 5 (nur Layout + Basis-Styles) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
 
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
   <style>
-    body { background: #f6f7f8; }
-    .card-soft { border: 0; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
-    .badge-soft-pos { background: rgba(25,135,84,.12); color: #198754; border: 1px solid rgba(25,135,84,.25); }
-    .badge-soft-neg { background: rgba(220,53,69,.12); color: #dc3545; border: 1px solid rgba(220,53,69,.25); }
-    .result-pos { background: linear-gradient(180deg, rgba(25,135,84,.08), rgba(25,135,84,.02)); border: 1px solid rgba(25,135,84,.18); }
-    .result-neg { background: linear-gradient(180deg, rgba(220,53,69,.08), rgba(220,53,69,.02)); border: 1px solid rgba(220,53,69,.18); }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    /* ========= Modern Theme ========= */
+    :root{
+      --bg0:#0b1220;
+      --bg1:#0f172a;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.06);
+      --stroke:rgba(255,255,255,.12);
+      --text:#e5e7eb;
+      --muted:#a7b0c0;
+
+      --accent:#4f46e5;  /* indigo */
+      --accent2:#06b6d4; /* cyan */
+      --good:#22c55e;
+      --bad:#ef4444;
+      --warn:#f59e0b;
+
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --shadow2: 0 10px 28px rgba(0,0,0,.28);
+      --radius: 18px;
+    }
+
+    body{
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 500px at 15% 10%, rgba(79,70,229,.25), transparent 55%),
+        radial-gradient(900px 500px at 85% 20%, rgba(6,182,212,.20), transparent 55%),
+        radial-gradient(900px 500px at 60% 90%, rgba(34,197,94,.12), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      color: var(--text);
+    }
+
+    /* Container spacing */
+    .wrap{ max-width: 1100px; }
+
+    /* Glass cards */
+    .card-glass{
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .section-title{
+      font-size: 1.1rem;
+      letter-spacing: .2px;
+    }
+
+    .subtle{
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .divider{
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+
+    /* Controls */
+    .form-control, .input-group-text{
+      background: rgba(255,255,255,.06) !important;
+      border: 1px solid rgba(255,255,255,.14) !important;
+      color: var(--text) !important;
+      border-radius: 14px;
+    }
+    .form-control::placeholder{ color: rgba(229,231,235,.55); }
+    .input-group-text{ color: rgba(229,231,235,.80) !important; }
+
+    .input-group .input-group-text:first-child{ border-top-right-radius: 0; border-bottom-right-radius: 0; }
+    .input-group .form-control{ border-top-left-radius: 0; border-bottom-left-radius: 0; }
+    .input-group .input-group-text:last-child{ border-top-left-radius: 0; border-bottom-left-radius: 0; }
+    .input-group .form-control + .input-group-text{ border-top-left-radius: 0; border-bottom-left-radius: 0; }
+
+    /* Buttons - modern */
+    .btn{
+      border-radius: 14px;
+      padding: .60rem .95rem;
+      border: 1px solid transparent;
+      box-shadow: var(--shadow2);
+    }
+    .btn-primary{
+      background: linear-gradient(135deg, var(--accent), #312e81);
+      border-color: rgba(255,255,255,.10);
+    }
+    .btn-primary:hover{ filter: brightness(1.07); }
+    .btn-outline-light{
+      border-color: rgba(255,255,255,.20);
+      color: rgba(255,255,255,.90);
+      background: rgba(255,255,255,.04);
+    }
+    .btn-outline-light:hover{
+      background: rgba(255,255,255,.10);
+      border-color: rgba(255,255,255,.30);
+      color: #fff;
+    }
+    .btn-success{
+      background: linear-gradient(135deg, #22c55e, #15803d);
+      border-color: rgba(255,255,255,.10);
+    }
+
+    /* Chips / badges */
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      padding:.35rem .65rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.90);
+      font-size: .85rem;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;display:inline-block;
+      background: rgba(255,255,255,.4);
+    }
+    .dot.good{ background: var(--good); }
+    .dot.bad{ background: var(--bad); }
+    .dot.accent{ background: var(--accent2); }
+
+    /* Result cards */
+    .result-card{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      padding: 14px;
+    }
+    .result-pos{
+      border-color: rgba(34,197,94,.30);
+      background: linear-gradient(180deg, rgba(34,197,94,.10), rgba(255,255,255,.04));
+    }
+    .result-neg{
+      border-color: rgba(239,68,68,.30);
+      background: linear-gradient(180deg, rgba(239,68,68,.10), rgba(255,255,255,.04));
+    }
+
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    /* Alert */
+    .alert-modern{
+      border-radius: 16px;
+      border: 1px solid rgba(245,158,11,.28);
+      background: rgba(245,158,11,.10);
+      color: rgba(255,255,255,.92);
+      box-shadow: var(--shadow2);
+    }
+
+    /* Small helpers */
+    .kpi{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Make bootstrap text muted look good on dark */
+    .text-secondary{ color: var(--muted) !important; }
   </style>
 </head>
+
 <body>
   <div id="root"></div>
 
   <script>
     const e = React.createElement;
 
-    function area(d) {
-      return Math.PI * d * d / 4;
-    }
+    function area(d){ return Math.PI * d * d / 4; }
 
     function App() {
-      const [rows, setRows] = React.useState(Array(4).fill({ d: "", n: "" }));
+      const [rows, setRows] = React.useState(Array(4).fill({ d:"", n:"" }));
       const [maxDev, setMaxDev] = React.useState(10);
       const [tolMinus, setTolMinus] = React.useState(0.2);
       const [tolPlus, setTolPlus] = React.useState(0.2);
       const [pdfName, setPdfName] = React.useState("");
-      const [results, setResults] = React.useState([]);
+      const [results, setResults] = React.useState([]);   // [{used, dev, title}]
       const [status, setStatus] = React.useState("");
+      const [meta, setMeta] = React.useState({stockCount:0, minD:null, maxD:null, searched:0});
 
-      function updateRow(i, key, val) {
-        const r = [...rows];
-        r[i] = { ...r[i], [key]: val };
-        setRows(r);
+      function updateRow(i, key, val){
+        const next = [...rows];
+        next[i] = { ...next[i], [key]: val };
+        setRows(next);
       }
 
-      function calculate() {
+      function resetAll(){
+        setRows(Array(4).fill({ d:"", n:"" }));
+        setMaxDev(10);
+        setTolMinus(0.2);
+        setTolPlus(0.2);
+        setPdfName("");
+        setResults([]);
         setStatus("");
+        setMeta({stockCount:0, minD:null, maxD:null, searched:0});
+      }
+
+      function calculate(){
+        setStatus("");
+        setResults([]);
+
         let stock = [];
         let minD = Infinity;
         let maxD = -Infinity;
@@ -55,16 +217,16 @@
         rows.forEach(r => {
           const d = parseFloat(String(r.d).replace(",", "."));
           const n = parseInt(String(r.n), 10);
-          if (!isNaN(d) && !isNaN(n) && n > 0) {
+          if (!isNaN(d) && !isNaN(n) && n > 0){
             minD = Math.min(minD, d);
             maxD = Math.max(maxD, d);
-            for (let i = 0; i < n; i++) stock.push(d);
+            for (let i=0;i<n;i++) stock.push(d);
           }
         });
 
-        if (!stock.length || !isFinite(minD)) {
-          setResults([]);
+        if (!stock.length || !isFinite(minD)){
           setStatus("Bitte mindestens einen Draht-Durchmesser + Anzahl eingeben.");
+          setMeta({stockCount:0, minD:null, maxD:null, searched:0});
           return;
         }
 
@@ -72,60 +234,60 @@
         const maxAllowed = maxD + tolPlus;
         stock = stock.filter(d => d >= minAllowed && d <= maxAllowed);
 
-        if (!stock.length) {
-          setResults([]);
+        if (!stock.length){
           setStatus("Keine Drähte im zulässigen Bereich (min/max ± Toleranz).");
+          setMeta({stockCount:0, minD, maxD, searched:0});
           return;
         }
 
         const target = area(minD);
 
-        // ✅ Suche: max 1000 Kombis, max 5 Drähte
+        // Suche: max 1000 Kombis, max 5 Drähte
         let combis = [];
-        for (let i = 0; i < stock.length && combis.length < 1000; i++) {
+        let searched = 0;
+
+        for (let i=0; i<stock.length && combis.length<1000; i++){
           let sum = 0;
           let used = [];
-          for (let j = i; j < stock.length; j++) {
-            if (used.length >= 5) break; // ✅ maximal 5 Drähte
+          for (let j=i; j<stock.length; j++){
+            if (used.length >= 5) break; // ✅ max. 5 Drähte
             sum += area(stock[j]);
             used.push(stock[j]);
+            searched++;
 
             const dev = (sum - target) / target * 100;
-            if (Math.abs(dev) <= maxDev) {
-              combis.push({ used: [...used], dev });
+            if (Math.abs(dev) <= maxDev){
+              combis.push({ used:[...used], dev });
             }
           }
         }
 
-        if (!combis.length) {
-          setResults([]);
+        setMeta({stockCount: stock.length, minD, maxD, searched});
+
+        if (!combis.length){
           setStatus("Keine Kombination innerhalb der Abweichung gefunden (ggf. Abweichung erhöhen).");
           return;
         }
 
         const plusList = combis
           .filter(c => c.dev >= 0)
-          .sort((a, b) => a.dev - b.dev);
+          .sort((a,b) => a.dev - b.dev);
 
         const minusList = combis
           .filter(c => c.dev < 0)
-          .sort((a, b) => b.dev - a.dev); // näher an 0 ist besser
+          .sort((a,b) => b.dev - a.dev); // näher an 0 ist besser
 
         let out = [];
 
-        // Titel-Logik wie von dir gewünscht:
-        // Kombi 1: beste positive wenn vorhanden sonst beste negative
-        // Kombi 2: immer negativ; wenn Kombi 1 bereits beste negative -> Kombi 2 = zweitbeste negative und Titel nur "negativ"
-        if (plusList.length > 0) {
+        // Titel-Logik wie gewünscht
+        if (plusList.length > 0){
           out.push({ ...plusList[0], title: "Kombination 1 (beste positive)" });
-
-          if (minusList.length > 0) {
+          if (minusList.length > 0){
             out.push({ ...minusList[0], title: "Kombination 2 (beste negative)" });
           }
-        } else if (minusList.length > 0) {
+        } else if (minusList.length > 0){
           out.push({ ...minusList[0], title: "Kombination 1 (beste negative)" });
-
-          if (minusList.length > 1) {
+          if (minusList.length > 1){
             out.push({ ...minusList[1], title: "Kombination 2 (negativ)" });
           }
         }
@@ -133,174 +295,203 @@
         setResults(out);
       }
 
-      function resetAll() {
-        setRows(Array(4).fill({ d: "", n: "" }));
-        setMaxDev(10);
-        setTolMinus(0.2);
-        setTolPlus(0.2);
-        setPdfName("");
-        setResults([]);
-        setStatus("");
-      }
-
-      function savePDF() {
-        // Platzhalter – echte PDF können wir später mit jsPDF einbauen
+      function savePDF(){
+        // Platzhalter – später können wir jsPDF sauber integrieren
         alert("PDF speichern: " + (pdfName || "drahtkombination"));
       }
 
-      return e("div", { className: "container py-4" },
+      return e("div", { className: "container py-4 wrap" },
 
-        e("div", { className: "card card-soft rounded-4 mb-4" },
-          e("div", { className: "card-body p-4" },
-            e("div", { className: "d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3" },
-              e("div", null,
-                e("h2", { className: "mb-1" }, "Drahtkombinator"),
-                e("div", { className: "text-secondary" },
-                  "Gib Lager-Drähte ein – ich suche die besten Kombinationen (max. 5 Drähte)."
+        /* Header Card */
+        e("div", { className: "card-glass p-4 mb-4" },
+          e("div", { className: "d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3" },
+            e("div", null,
+              e("div", { className: "d-flex align-items-center gap-2 mb-1" },
+                e("span", { className: "chip" },
+                  e("span", { className: "dot accent" }), "Drahtkombinator"
+                ),
+                e("span", { className: "chip" },
+                  e("span", { className: "dot" }), "max. 5 Drähte"
                 )
               ),
-              e("div", { className: "d-flex gap-2 flex-wrap" },
-                e("button", { className: "btn btn-primary", onClick: calculate }, "Berechnen"),
-                e("button", { className: "btn btn-outline-secondary", onClick: resetAll }, "Reset")
+              e("h2", { className: "mb-1" }, "Kombinationen schnell finden"),
+              e("div", { className: "subtle" },
+                "Modernes Layout (Bootstrap + Custom Theme). Kombination 1 = beste positive (wenn vorhanden), sonst beste negative. Kombination 2 immer negativ."
               )
+            ),
+            e("div", { className: "d-flex gap-2 flex-wrap" },
+              e("button", { className: "btn btn-primary", onClick: calculate }, "Berechnen"),
+              e("button", { className: "btn btn-outline-light", onClick: resetAll }, "Reset")
             )
           )
         ),
 
         e("div", { className: "row g-3" },
 
-          // Eingaben
+          /* Left: Inputs */
           e("div", { className: "col-12 col-lg-7" },
-            e("div", { className: "card card-soft rounded-4" },
-              e("div", { className: "card-body p-4" },
-                e("h5", { className: "mb-3" }, "Lagerbestand"),
+            e("div", { className: "card-glass p-4" },
+              e("div", { className: "d-flex justify-content-between align-items-center mb-3" },
+                e("div", null,
+                  e("div", { className: "section-title fw-semibold" }, "Lagerbestand"),
+                  e("div", { className: "subtle" }, "Bis zu 4 Zeilen: Durchmesser + Anzahl.")
+                )
+              ),
 
-                rows.map((r, i) =>
-                  e("div", { key: i, className: "row g-2 align-items-center mb-2" },
+              rows.map((r, i) =>
+                e("div", { key: i, className: "row g-2 align-items-center mb-2" },
 
-                    e("div", { className: "col-7 col-md-8" },
-                      e("div", { className: "input-group" },
-                        e("span", { className: "input-group-text" }, "Ø"),
-                        e("input", {
-                          className: "form-control",
-                          placeholder: "Durchmesser (mm)",
-                          value: r.d,
-                          onChange: ev => updateRow(i, "d", ev.target.value)
-                        }),
-                        e("span", { className: "input-group-text" }, "mm")
-                      )
-                    ),
+                  e("div", { className: "col-7 col-md-8" },
+                    e("div", { className: "input-group" },
+                      e("span", { className: "input-group-text" }, "Ø"),
+                      e("input", {
+                        className: "form-control",
+                        placeholder: "Durchmesser (mm)",
+                        value: r.d,
+                        onChange: ev => updateRow(i, "d", ev.target.value)
+                      }),
+                      e("span", { className: "input-group-text" }, "mm")
+                    )
+                  ),
 
-                    e("div", { className: "col-5 col-md-4" },
-                      e("div", { className: "input-group" },
-                        e("span", { className: "input-group-text" }, "x"),
-                        e("input", {
-                          className: "form-control",
-                          placeholder: "Anzahl",
-                          value: r.n,
-                          onChange: ev => updateRow(i, "n", ev.target.value)
-                        })
-                      )
+                  e("div", { className: "col-5 col-md-4" },
+                    e("div", { className: "input-group" },
+                      e("span", { className: "input-group-text" }, "x"),
+                      e("input", {
+                        className: "form-control",
+                        placeholder: "Anzahl",
+                        value: r.n,
+                        onChange: ev => updateRow(i, "n", ev.target.value)
+                      })
                     )
                   )
-                ),
+                )
+              ),
 
-                e("hr", { className: "my-4" }),
+              e("div", { className: "divider my-4" }),
 
-                e("div", { className: "row g-3" },
-                  e("div", { className: "col-12 col-md-4" },
-                    e("label", { className: "form-label" }, "Max. Abweichung (%)"),
-                    e("input", {
-                      type: "number",
-                      className: "form-control",
-                      value: maxDev,
-                      onChange: ev => setMaxDev(+ev.target.value)
-                    })
-                  ),
-                  e("div", { className: "col-12 col-md-4" },
-                    e("label", { className: "form-label" }, "Toleranz − (mm)"),
-                    e("input", {
-                      type: "number",
-                      step: "0.1",
-                      className: "form-control",
-                      value: tolMinus,
-                      onChange: ev => setTolMinus(+ev.target.value)
-                    })
-                  ),
-                  e("div", { className: "col-12 col-md-4" },
-                    e("label", { className: "form-label" }, "Toleranz + (mm)"),
-                    e("input", {
-                      type: "number",
-                      step: "0.1",
-                      className: "form-control",
-                      value: tolPlus,
-                      onChange: ev => setTolPlus(+ev.target.value)
-                    })
-                  )
-                ),
-
-                e("div", { className: "mt-4" },
-                  e("label", { className: "form-label" }, "PDF-Dateiname (optional)"),
+              e("div", { className: "row g-3" },
+                e("div", { className: "col-12 col-md-4" },
+                  e("label", { className: "form-label subtle" }, "Max. Abweichung (%)"),
                   e("input", {
+                    type: "number",
                     className: "form-control",
-                    placeholder: "z.B. drahtkombination_01",
-                    value: pdfName,
-                    onChange: ev => setPdfName(ev.target.value)
-                  }),
-                  e("div", { className: "mt-3 d-flex flex-wrap gap-2" },
-                    // ✅ Nur EIN PDF-Button (kein doppelter Button mehr)
-                    e("button", { className: "btn btn-success", onClick: savePDF }, "Als PDF speichern")
-                  )
+                    value: maxDev,
+                    onChange: ev => setMaxDev(+ev.target.value)
+                  })
                 ),
+                e("div", { className: "col-12 col-md-4" },
+                  e("label", { className: "form-label subtle" }, "Toleranz − (mm)"),
+                  e("input", {
+                    type: "number",
+                    step: "0.1",
+                    className: "form-control",
+                    value: tolMinus,
+                    onChange: ev => setTolMinus(+ev.target.value)
+                  })
+                ),
+                e("div", { className: "col-12 col-md-4" },
+                  e("label", { className: "form-label subtle" }, "Toleranz + (mm)"),
+                  e("input", {
+                    type: "number",
+                    step: "0.1",
+                    className: "form-control",
+                    value: tolPlus,
+                    onChange: ev => setTolPlus(+ev.target.value)
+                  })
+                )
+              ),
 
-                status
-                  ? e("div", { className: "alert alert-warning mt-4 mb-0" }, status)
-                  : null
-              )
+              e("div", { className: "mt-4" },
+                e("label", { className: "form-label subtle" }, "PDF-Dateiname (optional)"),
+                e("input", {
+                  className: "form-control",
+                  placeholder: "z.B. drahtkombination_01",
+                  value: pdfName,
+                  onChange: ev => setPdfName(ev.target.value)
+                }),
+                e("div", { className: "mt-3 d-flex flex-wrap gap-2" },
+                  /* ✅ Nur EIN PDF-Button */
+                  e("button", { className: "btn btn-success", onClick: savePDF }, "Als PDF speichern")
+                )
+              ),
+
+              status
+                ? e("div", { className: "alert-modern p-3 mt-4 mb-0" }, status)
+                : null
             )
           ),
 
-          // Ergebnisse
+          /* Right: Results */
           e("div", { className: "col-12 col-lg-5" },
-            e("div", { className: "card card-soft rounded-4" },
-              e("div", { className: "card-body p-4" },
-                e("h5", { className: "mb-3" }, "Ergebnisse"),
+            e("div", { className: "card-glass p-4" },
+              e("div", { className: "d-flex justify-content-between align-items-center mb-3" },
+                e("div", null,
+                  e("div", { className: "section-title fw-semibold" }, "Ergebnisse"),
+                  e("div", { className: "subtle" }, "Die 2 relevantesten Kombinationen.")
+                )
+              ),
 
-                results.length === 0
-                  ? e("div", { className: "text-secondary" },
-                      "Noch keine Ergebnisse. Klicke auf ",
-                      e("span", { className: "fw-semibold" }, "Berechnen"),
-                      "."
-                    )
-                  : null,
+              e("div", { className: "kpi mb-3" },
+                e("span", { className: "chip" },
+                  e("span", { className: "dot accent" }),
+                  "Drähte: ",
+                  e("span", { className: "mono" }, meta.stockCount || 0)
+                ),
+                e("span", { className: "chip" },
+                  e("span", { className: "dot" }),
+                  "Suche: ",
+                  e("span", { className: "mono" }, meta.searched || 0)
+                ),
+                e("span", { className: "chip" },
+                  e("span", { className: "dot" }),
+                  "Ø min/max: ",
+                  e("span", { className: "mono" },
+                    (meta.minD != null ? meta.minD.toFixed(2) : "--"),
+                    " / ",
+                    (meta.maxD != null ? meta.maxD.toFixed(2) : "--")
+                  )
+                )
+              ),
 
-                results.map((r, idx) => {
-                  const isPos = r.dev >= 0;
-                  return e("div", {
-                    key: idx,
-                    className: "rounded-4 p-3 mb-3 " + (isPos ? "result-pos" : "result-neg")
-                  },
-                    e("div", { className: "d-flex justify-content-between align-items-start gap-2" },
-                      e("div", null,
-                        e("div", { className: "fw-semibold" }, r.title),
-                        e("div", { className: "text-secondary small" },
-                          "Drähte: ",
-                          e("span", { className: "mono" }, r.used.join(", ") + " mm"),
-                          " (", r.used.length, "x)"
+              results.length === 0
+                ? e("div", { className: "subtle" },
+                    "Noch keine Ergebnisse. Klicke auf ",
+                    e("span", { className: "fw-semibold" }, "Berechnen"),
+                    "."
+                  )
+                : null,
+
+              results.map((r, idx) => {
+                const isPos = r.dev >= 0;
+                return e("div", {
+                  key: idx,
+                  className: "result-card mb-3 " + (isPos ? "result-pos" : "result-neg")
+                },
+                  e("div", { className: "d-flex justify-content-between align-items-start gap-2" },
+                    e("div", null,
+                      e("div", { className: "fw-semibold mb-1" }, r.title),
+                      e("div", { className: "subtle" },
+                        "Drähte: ",
+                        e("span", { className: "mono" }, r.used.join(", ") + " mm"),
+                        " ",
+                        e("span", { className: "chip ms-2" },
+                          e("span", { className: "dot " + (isPos ? "good" : "bad") }),
+                          r.used.length + "x"
                         )
-                      ),
-                      e("span", {
-                        className: "badge rounded-pill " + (isPos ? "badge-soft-pos" : "badge-soft-neg")
-                      }, isPos ? "positiv" : "negativ")
+                      )
                     ),
-
-                    e("div", { className: "mt-2" },
-                      "Abweichung: ",
-                      e("span", { className: "fw-bold mono" }, r.dev.toFixed(2) + " %")
+                    e("span", { className: "chip" },
+                      e("span", { className: "dot " + (isPos ? "good" : "bad") }),
+                      isPos ? "positiv" : "negativ"
                     )
-                  );
-                })
-              )
+                  ),
+                  e("div", { className: "mt-2" },
+                    e("span", { className: "subtle" }, "Abweichung: "),
+                    e("span", { className: "fw-bold mono" }, r.dev.toFixed(2) + " %")
+                  )
+                );
+              })
             )
           )
         )
