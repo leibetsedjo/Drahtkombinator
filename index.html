@@ -278,7 +278,19 @@ function App() {
           setMaxOffset('0.2');
         },
         style: { marginLeft: '10px', backgroundColor: '#e67e22' }
-      }, 'Neue Berechnung starten')
+      }, 'Neue Berechnung starten'),
+      e('input', {
+        placeholder: 'Dateiname für PDF (optional)',
+        id: 'pdfName',
+        style: { marginLeft: '10px', padding: '6px', width: '200px' }
+      }),
+      e('button', {
+        onClick: () => {
+          alert('Tipp: Du kannst beim Speichern selbst den Namen eingeben, z. B.: "Drahtkombination.pdf"');
+          window.print();
+        },
+        style: { marginLeft: '10px', backgroundColor: '#16a085' }
+      }, 'Als PDF speichern')
     ),
     showStock && e('div', null,
       e('h3', null, 'Lagerbestand:'),
@@ -305,9 +317,27 @@ function App() {
     total > 0 && e('div', null,
       e('p', null, 'Original Gesamt: ' + total.toFixed(4) + ' mm²'),
       message && e('p', { className: 'warning' }, message),
-      results.map((r, idx) =>
-        e('div', { key: idx, style: { border: '1px solid #ccc', margin: '6px', padding: '6px', borderRadius: '8px', backgroundColor: '#fff' } },
-          e('h4', null, 'Kombination ' + (idx + 1)),
+      results.map((r, idx) => {
+        let bgColor = '#ffffff';
+        if (r.dev > 0) bgColor = '#d4edda'; // grün
+        else if (r.dev < 0) bgColor = '#fff3cd'; // orange
+        if (r.devPercent >= parseFloat(maxDev)) bgColor = '#f8d7da'; // rot
+
+        return e('div', {
+          key: idx,
+          style: {
+            border: '1px solid #ccc',
+            margin: '6px',
+            padding: '6px',
+            borderRadius: '8px',
+            backgroundColor: bgColor
+          }
+        },
+          e('h4', null,
+            idx === 0 ? 'Kombination 1 (Abweichung positiv)' :
+            idx === 1 ? 'Kombination 2 (Abweichung negativ)' :
+            'Kombination ' + (idx + 1)
+          ),
           e('ul', null,
             Object.entries(r.grouped).map(([dia, count]) =>
               e('li', null, count + ' x ' + dia + ' mm')
@@ -317,8 +347,8 @@ function App() {
           e('p', null, 'Abweichung: ' +
             (r.dev >= 0 ? '+' : '') + r.dev.toFixed(4) + ' mm² (' +
             (r.devPercent >= 0 ? '+' : '') + r.devPercent.toFixed(2) + '%)')
-        )
-      )
+        );
+      })
     )
   );
 }
