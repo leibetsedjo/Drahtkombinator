@@ -1,338 +1,176 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Drahtkombinator</title>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      padding: 20px;
-      background: #f4f4f8;
-      color: #333;
-    }
-    h2, h3, h4 {
-      color: #2c3e50;
-    }
-    .entry-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-    input, button {
-      margin: 4px;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1em;
-    }
-    input {
-      width: 120px;
-      max-width: 45%;
-    }
-    button {
-      background-color: #3498db;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #2980b9;
-    }
-    .stock-item {
-      margin-bottom: 4px;
-    }
-    .warning {
-      color: red;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-    .info {
-      font-size: 0.9em;
-      color: #555;
-      margin-bottom: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Drahtkombinator</title>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background: #f6f7f8;
+}
+input, button {
+  margin: 4px;
+  padding: 6px;
+}
+button {
+  cursor: pointer;
+}
+.result {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 6px;
+}
+.positive { background: #e6fff0; }
+.negative { background: #fff0f0; }
+</style>
 </head>
+
 <body>
 <div id="root"></div>
+
 <script>
 const e = React.createElement;
 
-function calculateCrossSection(d) {
+function area(d) {
   return Math.PI * d * d / 4;
 }
 
-function combine(arr, length) {
-  if (length === 0) return [[]];
-  const result = [];
-  for (let i = 0; i < arr.length; i++) {
-    const first = arr[i];
-    const rest = arr.slice(i);
-    const combos = combine(rest, length - 1);
-    combos.forEach(c => result.push([first, ...c]));
-  }
-  return result;
-}
-
 function App() {
-  const [entries, setEntries] = React.useState([
-    { d: '', c: '' },
-    { d: '', c: '' },
-    { d: '', c: '' },
-    { d: '', c: '' }
-  ]);
-
-  const [maxDev, setMaxDev] = React.useState('10');
-  const [minOffset, setMinOffset] = React.useState('0.2');
-  const [maxOffset, setMaxOffset] = React.useState('0.2');
-  const [stock, setStock] = React.useState([
-    { d: 0.20, a: true }, { d: 0.25, a: true }, { d: 0.30, a: true },
-    { d: 0.35, a: true }, { d: 0.40, a: true }, { d: 0.43, a: true },
-    { d: 0.45, a: true }, { d: 0.50, a: true }, { d: 0.55, a: true },
-    { d: 0.60, a: true }, { d: 0.65, a: true }, { d: 0.67, a: true },
-    { d: 0.70, a: true }, { d: 0.75, a: true }, { d: 0.80, a: true },
-    { d: 0.85, a: true }, { d: 0.90, a: true }, { d: 1.06, a: true },
-    { d: 1.12, a: true }, { d: 1.18, a: true }, { d: 1.20, a: true },
-    { d: 1.25, a: true }
-  ]);
-
+  const [rows, setRows] = React.useState(
+    Array(4).fill({ d: "", n: "" })
+  );
+  const [maxDev, setMaxDev] = React.useState(10);
+  const [tolMinus, setTolMinus] = React.useState(0.2);
+  const [tolPlus, setTolPlus] = React.useState(0.2);
+  const [pdfName, setPdfName] = React.useState("");
   const [results, setResults] = React.useState([]);
-  const [total, setTotal] = React.useState(0);
-  const [showStock, setShowStock] = React.useState(false);
-  const [newDia, setNewDia] = React.useState('');
-  const [message, setMessage] = React.useState('');
 
-  function updateEntry(i, field, val) {
-    const ne = entries.slice();
-    ne[i][field] = val.replace(',', '.');
-    setEntries(ne);
+  function updateRow(i, key, val) {
+    const r = [...rows];
+    r[i] = { ...r[i], [key]: val };
+    setRows(r);
   }
 
-  function toggle(i) {
-    const ns = stock.slice();
-    ns[i].a = !ns[i].a;
-    setStock(ns);
-  }
+  function calculate() {
+    let stock = [];
+    let minD = Infinity;
+    let maxD = -Infinity;
 
-  function deleteStock(i) {
-    const ns = stock.slice();
-    ns.splice(i, 1);
-    setStock(ns);
-  }
-
-  function addStock() {
-    const dia = parseFloat(newDia.replace(',', '.'));
-    if (!isNaN(dia)) {
-      setStock([...stock, { d: dia, a: true }]);
-      setNewDia('');
-    }
-  }
-
-  function calc() {
-    let tot = 0;
-    let minOriginal = Infinity;
-    let maxOriginal = -Infinity;
-    let totalCount = 0;
-    let missingDiameters = [];
-
-    entries.forEach(en => {
-      const d = parseFloat(en.d);
-      const c = parseInt(en.c);
-      if (!isNaN(d) && !isNaN(c)) {
-        tot += calculateCrossSection(d) * c;
-        totalCount += c;
-        if (d < minOriginal) minOriginal = d;
-        if (d > maxOriginal) maxOriginal = d;
-
-        const existsInStock = stock.some(s => s.a && s.d === d);
-        if (!existsInStock) missingDiameters.push(d);
+    rows.forEach(r => {
+      const d = parseFloat(r.d);
+      const n = parseInt(r.n);
+      if (!isNaN(d) && !isNaN(n)) {
+        minD = Math.min(minD, d);
+        maxD = Math.max(maxD, d);
+        for (let i = 0; i < n; i++) stock.push(d);
       }
     });
 
-    setTotal(tot);
-    if (missingDiameters.length > 0) {
-      setMessage('Hinweis: Diese Durchmesser fehlen im Lager und werden ersetzt: ' + missingDiameters.join(', ') + ' mm');
-    } else {
-      setMessage('');
-    }
+    if (!stock.length) return;
 
-    const maxDevPercent = parseFloat(maxDev);
-    const minTol = parseFloat(minOffset);
-    const maxTol = parseFloat(maxOffset);
-    const minAllowed = minOriginal - minTol;
-    const maxAllowed = maxOriginal + maxTol;
-    const activeStock = stock.filter(s => s.a && s.d >= minAllowed && s.d <= maxAllowed);
+    const minAllowed = minD - tolMinus;
+    const maxAllowed = maxD + tolPlus;
+    stock = stock.filter(d => d >= minAllowed && d <= maxAllowed);
 
-    const allCombos = [];
-    let comboCount = 0;
-    outer: for (let len = 1; len <= totalCount; len++) {
-      const combos = combine(activeStock, len);
-      for (let c of combos) {
-        comboCount++;
-        if (comboCount > 1000) break outer;
-        const grp = {};
-        c.forEach(x => grp[x.d] = (grp[x.d] || 0) + 1);
-        const cross = c.reduce((sum, x) => sum + calculateCrossSection(x.d), 0);
-        const dev = cross - tot;
-        const devAbsPercent = tot ? Math.abs(dev / tot) * 100 : 0;
-        allCombos.push({
-          grouped: grp,
-          cross,
-          dev,
-          devPercent: devAbsPercent,
-          types: Object.keys(grp).length
-        });
+    const target = area(minD);
+    let combis = [];
+
+    for (let i = 0; i < stock.length && combis.length < 1000; i++) {
+      let sum = 0;
+      let used = [];
+      for (let j = i; j < stock.length; j++) {
+        if (used.length >= 4) break;
+        sum += area(stock[j]);
+        used.push(stock[j]);
+        const dev = (sum - target) / target * 100;
+        if (Math.abs(dev) <= maxDev) {
+          combis.push({ used: [...used], dev });
+        }
       }
     }
 
-    allCombos.sort((a, b) => a.devPercent - b.devPercent || a.types - b.types);
-    const filtered = allCombos.filter(c => c.devPercent <= maxDevPercent);
-    if (filtered.length === 0 && allCombos.length > 0) {
-      setMessage('Keine passende Kombination gefunden. Beste Alternativen:');
-      setResults(allCombos.slice(0, 5));
-    } else {
-      const pos = filtered.find(c => c.dev >= 0);
-      const neg = filtered.find(c => c.dev <= 0);
-      const rest = filtered.filter(c => c !== pos && c !== neg);
-      const resultList = [];
-      if (pos) resultList.push(pos);
-      if (neg && neg !== pos) resultList.push(neg);
-      resultList.push(...rest.slice(0, 3));
-      setResults(resultList);
+    let bestPlus = combis
+      .filter(c => c.dev >= 0)
+      .sort((a, b) => a.dev - b.dev)[0];
+
+    let bestMinus = combis
+      .filter(c => c.dev < 0)
+      .sort((a, b) => b.dev - a.dev);
+
+    let res = [];
+    if (bestPlus) res.push(bestPlus);
+    if (bestMinus.length) {
+      res.push(bestMinus[bestPlus ? 0 : 1] || bestMinus[0]);
     }
+
+    setResults(res);
   }
 
-  return e('div', null,
-    e('h2', null, 'Drahtkombinator'),
-    entries.map((en, i) =>
-      e('div', { className: 'entry-row', key: i },
-        e('input', {
-          placeholder: 'Durchmesser mm',
-          value: en.d,
-          onChange: e => updateEntry(i, 'd', e.target.value)
+  function savePDF() {
+    alert("PDF speichern: " + (pdfName || "drahtkombination"));
+  }
+
+  return e("div", null,
+    e("h2", null, "Drahtkombinator"),
+
+    rows.map((r, i) =>
+      e("div", { key: i },
+        e("input", {
+          placeholder: "Durchmesser mm",
+          value: r.d,
+          onChange: ev => updateRow(i, "d", ev.target.value)
         }),
-        e('input', {
-          placeholder: 'Anzahl',
-          value: en.c,
-          onChange: e => updateEntry(i, 'c', e.target.value)
+        e("input", {
+          placeholder: "Anzahl",
+          value: r.n,
+          onChange: ev => updateRow(i, "n", ev.target.value)
         })
       )
     ),
-    e('div', null,
-      e('label', null, 'Max. Abweichung [%]: '),
-      e('input', {
-        type: 'number',
-        value: maxDev,
-        onChange: e => setMaxDev(e.target.value),
-        style: { width: '60px' }
-      }),
-      e('label', { style: { marginLeft: '10px' } }, '− Toleranz:'),
-      e('input', {
-        type: 'number',
-        value: minOffset,
-        onChange: e => setMinOffset(e.target.value),
-        style: { width: '60px' }
-      }),
-      e('label', { style: { marginLeft: '10px' } }, '+ Toleranz:'),
-      e('input', {
-        type: 'number',
-        value: maxOffset,
-        onChange: e => setMaxOffset(e.target.value),
-        style: { width: '60px' }
-      })
-    ),
-    e('div', { className: 'info' },
-      'Nur Kombinationen mit max. ±' + maxDev + '% Abweichung werden angezeigt.'
-    ),
-    e('div', null,
-      e('button', { onClick: calc }, 'Berechnen'),
-      e('button', { onClick: () => setShowStock(s => !s) }, 'Lager anzeigen/verstecken'),
-      e('button', {
-        onClick: () => {
-          setEntries([{ d: '', c: '' }, { d: '', c: '' }, { d: '', c: '' }, { d: '', c: '' }]);
-          setResults([]);
-          setMessage('');
-          setTotal(0);
-          setMaxDev('10');
-          setMinOffset('0.2');
-          setMaxOffset('0.2');
-        },
-        style: { marginLeft: '10px', backgroundColor: '#e67e22' }
-      }, 'Neue Berechnung starten'),
-      e('button', {
-        onClick: () => {
-          alert('Tipp: Du kannst beim Speichern selbst den Namen eingeben, z. B.: "Drahtkombination.pdf"');
-          window.print();
-        },
-        style: { marginLeft: '10px', backgroundColor: '#16a085' }
-      }, 'Als PDF speichern')
-    ),
-    showStock && e('div', null,
-      e('h3', null, 'Lagerbestand:'),
-      stock.map((s, i) =>
-        e('div', { key: i, className: 'stock-item' },
-          e('span', null, s.d.toFixed(2) + ' mm '),
-          e('input', {
-            type: 'checkbox',
-            checked: s.a,
-            onChange: () => toggle(i)
-          }),
-          e('button', { onClick: () => deleteStock(i) }, 'Löschen')
-        )
-      ),
-      e('div', null,
-        e('input', {
-          placeholder: 'z. B. 0,18',
-          value: newDia,
-          onChange: e => setNewDia(e.target.value)
-        }),
-        e('button', { onClick: addStock }, 'Hinzufügen')
-      )
-    ),
-    total > 0 && e('div', null,
-      e('p', null, 'Original Gesamt: ' + total.toFixed(4) + ' mm²'),
-      message && e('p', { className: 'warning' }, message),
-      results.map((r, idx) => {
-        let bgColor = '#ffffff';
-        if (r.dev > 0) bgColor = '#d4edda'; // grün
-        else if (r.dev < 0) bgColor = '#fff3cd'; // orange
-        if (r.devPercent >= parseFloat(maxDev)) bgColor = '#f8d7da'; // rot
 
-        return e('div', {
-          key: idx,
-          style: {
-            border: '1px solid #ccc',
-            margin: '6px',
-            padding: '6px',
-            borderRadius: '8px',
-            backgroundColor: bgColor
-          }
-        },
-          e('h4', null,
-            idx === 0 ? `Kombination 1 (beste ${r.dev >= 0 ? 'positive' : 'negative'})` :
-            idx === 1 ? `Kombination 2 (${r.dev >= 0 ? 'positive' : 'negative'})` :
-            `Kombination ${idx + 1} (Abweichung ${r.dev >= 0 ? 'positiv' : 'negativ'})`
-          ),
-          e('ul', null,
-            Object.entries(r.grouped).map(([dia, count]) =>
-              e('li', null, count + ' x ' + dia + ' mm')
-            )
-          ),
-          e('p', null, 'Gesamt: ' + r.cross.toFixed(4) + ' mm²'),
-          e('p', null, 'Abweichung: ' +
-            (r.dev >= 0 ? '+' : '') + r.dev.toFixed(4) + ' mm² (' +
-            (r.devPercent >= 0 ? '+' : '') + r.devPercent.toFixed(2) + '%)')
-        );
+    e("div", null,
+      "Max. Abweichung %: ",
+      e("input", { type: "number", value: maxDev, onChange: e => setMaxDev(+e.target.value) }),
+      "  - Toleranz mm: ",
+      e("input", { type: "number", value: tolMinus, onChange: e => setTolMinus(+e.target.value) }),
+      "  + Toleranz mm: ",
+      e("input", { type: "number", value: tolPlus, onChange: e => setTolPlus(+e.target.value) })
+    ),
+
+    e("div", null,
+      e("button", { onClick: calculate }, "Berechnen"),
+      e("button", { onClick: () => location.reload() }, "Neue Berechnung starten"),
+      e("button", { onClick: savePDF }, "Als PDF speichern"),
+      e("input", {
+        placeholder: "Dateiname für PDF (optional)",
+        value: pdfName,
+        onChange: e => setPdfName(e.target.value)
       })
+    ),
+
+    results.map((r, i) =>
+      e("div", {
+        key: i,
+        className: "result " + (r.dev >= 0 ? "positive" : "negative")
+      },
+        e("h4", null,
+          i === 0
+            ? r.dev >= 0 ? "Kombination 1 (beste +)" : "Kombination 1 (beste −)"
+            : "Kombination 2 (zweitbeste −)"
+        ),
+        e("div", null, "Drähte: ", r.used.join(", "), " mm"),
+        e("div", null, "Abweichung: ", r.dev.toFixed(2), " %")
+      )
     )
   );
 }
 
-ReactDOM.render(e(App), document.getElementById('root'));
+ReactDOM.createRoot(document.getElementById("root")).render(e(App));
 </script>
 </body>
 </html>
