@@ -7,9 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <style>
-    body {
-      background-color: white;
-    }
+    body { background-color: white; }
     .kombiblock {
       background: #f8f9fa;
       border: 1px solid #ccc;
@@ -56,8 +54,7 @@
 
     <div class="d-flex flex-wrap gap-2 mb-3">
       <button class="btn btn-success" onclick="berechneZiel()">🧮 Berechnen</button>
-        <button class="btn btn-outline-secondary" onclick="neueBerechnung()">♻️ Neue Berechnung</button>
-
+      <button class="btn btn-outline-secondary" onclick="neueBerechnung()">♻️ Neue Berechnung</button>
       <button class="btn btn-warning">🖨️ PDF Ausgabe</button>
       <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#lagerVerwaltung">📦 Lager</button>
     </div>
@@ -104,6 +101,7 @@
       </div>
     </div>
 
+    <!-- Lager ist standardmäßig zu -->
     <div class="collapse" id="lagerVerwaltung">
       <div class="card card-body">
         <h5>Lagerverwaltung</h5>
@@ -115,291 +113,271 @@
       </div>
     </div>
   </div>
-<script>
-  let lager = [];
 
-  function speichernLager() {
-    localStorage.setItem('drahtlager', JSON.stringify(lager));
-  }
+  <script>
+    let lager = [];
 
-  function lagerAnzeigen() {
-    const liste = document.getElementById('lagerListe');
-    liste.innerHTML = '';
+    // ✅ Standard-Lagerwerte (werden nur gesetzt, wenn localStorage leer ist)
+    const STANDARD_LAGER = [
+      0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60,
+      0.70, 0.75, 0.80,
+      1.06, 1.12, 1.18, 1.20, 1.25
+    ].map(d => ({ d, aktiv: true }));
 
-    if (!lager.length) {
-      liste.innerHTML = '<div class="text-muted">(Noch keine Drähte im Lager)</div>';
-      return;
+    function speichernLager() {
+      localStorage.setItem('drahtlager', JSON.stringify(lager));
     }
 
-    lager.sort((a, b) => a.d - b.d);
-
-    lager.forEach((eintrag, index) => {
-      const zeile = document.createElement('div');
-      zeile.className = 'd-flex justify-content-between align-items-center mb-2';
-
-      const text = document.createElement('span');
-      text.textContent = `${eintrag.d.toFixed(2)} mm`;
-
-      const btns = document.createElement('div');
-      btns.className = 'btn-group';
-
-      const aktiv = eintrag.aktiv !== false;
-
-      const aktivBtn = document.createElement('button');
-      aktivBtn.className = 'btn btn-sm ' + (aktiv ? 'btn-success' : 'btn-danger');
-      aktivBtn.textContent = aktiv ? 'Aktiv' : 'Inaktiv';
-      aktivBtn.onclick = () => {
-        lager[index].aktiv = !lager[index].aktiv;
-        speichernLager();
-        lagerAnzeigen();
-      };
-
-      const loeschBtn = document.createElement('button');
-      loeschBtn.className = 'btn btn-sm btn-outline-danger';
-      loeschBtn.textContent = 'Löschen';
-      loeschBtn.onclick = () => {
-        lager.splice(index, 1);
-        speichernLager();
-        lagerAnzeigen();
-      };
-
-      btns.appendChild(aktivBtn);
-      btns.appendChild(loeschBtn);
-      zeile.appendChild(text);
-      zeile.appendChild(btns);
-      liste.appendChild(zeile);
-    });
-  }
-
-  function lagerHinzufuegen() {
-    const eingabe = document.getElementById('lagerEingabe');
-    const wert = Number(eingabe.value);
-
-    // Validierung: positive Zahl
-    if (!Number.isFinite(wert) || wert <= 0) {
-      eingabe.focus();
-      return;
-    }
-
-    // Optional: keine Duplikate (wenn du das NICHT willst, diese 5 Zeilen entfernen)
-    const exists = lager.some(e => Math.abs(e.d - wert) < 1e-9);
-    if (exists) {
-      eingabe.value = '';
-      return;
-    }
-
-    lager.push({ d: wert, aktiv: true });
-    speichernLager();
-    lagerAnzeigen();
-    eingabe.value = '';
-  }
-
-  function neueBerechnung() {
-  // Eingabefelder leeren
-  document.querySelectorAll('.durchmesser, .anzahl').forEach(el => el.value = '');
-
-  // Ergebnisanzeige zurücksetzen
-  document.getElementById('gesamtQuerschnitt').innerHTML =
-    'Gesamtquerschnitt: <strong>0.0000 mm²</strong>';
-
-  // Kombi-Ausgaben leeren
-  document.getElementById('kombisPositiv').innerHTML = '';
-  document.getElementById('kombisNegativ').innerHTML = '';
-
-  // Optional: Fokus auf erstes Feld
-  const first = document.querySelector('.durchmesser');
-  if (first) first.focus();
-}
-
-
-  function berechneZiel() {
-    const dInputs = document.querySelectorAll('.durchmesser');
-    const nInputs = document.querySelectorAll('.anzahl');
-
-    let summe = 0;
-    let minEingabe = Infinity;
-    let maxEingabe = -Infinity;
-
-    for (let i = 0; i < dInputs.length; i++) {
-      const dVal = dInputs[i].value.trim();
-      const nVal = nInputs[i].value.trim();
-      if (dVal === '' || nVal === '') continue;
-
-      const d = Number(dVal);
-      const n = Number(nVal);
-
-      // Validierung
-      if (!Number.isFinite(d) || d <= 0) continue;
-      if (!Number.isInteger(n) || n <= 0) continue;
-
-      const a = n * Math.PI * Math.pow(d / 2, 2);
-      summe += a;
-      if (d < minEingabe) minEingabe = d;
-      if (d > maxEingabe) maxEingabe = d;
-    }
-
-    // Edge case: nichts eingegeben
-    if (!Number.isFinite(summe) || summe <= 0 || !isFinite(minEingabe) || !isFinite(maxEingabe)) {
+    function neueBerechnung() {
+      document.querySelectorAll('.durchmesser, .anzahl').forEach(el => el.value = '');
       document.getElementById('gesamtQuerschnitt').innerHTML =
-        `Gesamtquerschnitt: <strong>0.0000 mm²</strong>`;
+        'Gesamtquerschnitt: <strong>0.0000 mm²</strong>';
       document.getElementById('kombisPositiv').innerHTML = '';
       document.getElementById('kombisNegativ').innerHTML = '';
-      return;
+      const first = document.querySelector('.durchmesser');
+      if (first) first.focus();
     }
 
-    const ziel = summe;
-    document.getElementById('gesamtQuerschnitt').innerHTML =
-      `Gesamtquerschnitt: <strong>${ziel.toFixed(4)} mm²</strong>`;
+    function lagerAnzeigen() {
+      const liste = document.getElementById('lagerListe');
+      liste.innerHTML = '';
 
-    berechneKombinationen(ziel, minEingabe, maxEingabe);
-  }
+      if (!lager.length) {
+        liste.innerHTML = '<div class="text-muted">(Noch keine Drähte im Lager)</div>';
+        return;
+      }
 
-  function berechneKombinationen(ziel, minE, maxE) {
-    const abwMMU = Number(document.getElementById('abweichungUnter').value);
-    const abwMMO = Number(document.getElementById('abweichungOber').value);
-    const abwProzent = Number(document.getElementById('abweichungProzent').value);
+      lager.sort((a, b) => a.d - b.d);
 
-    const safeAbwMMU = Number.isFinite(abwMMU) ? abwMMU : 0;
-    const safeAbwMMO = Number.isFinite(abwMMO) ? abwMMO : 0;
-    const safeAbwProzent = Number.isFinite(abwProzent) ? abwProzent : 0;
+      lager.forEach((eintrag, index) => {
+        const zeile = document.createElement('div');
+        zeile.className = 'd-flex justify-content-between align-items-center mb-2';
 
-    const dMin = minE - safeAbwMMU;
-    const dMax = maxE + safeAbwMMO;
-    const delta = ziel * (safeAbwProzent / 100);
+        const text = document.createElement('span');
+        text.textContent = `${eintrag.d.toFixed(2)} mm`;
 
-    const aktiveD = lager.filter(e =>
-      e.aktiv && Number.isFinite(e.d) && e.d >= dMin && e.d <= dMax
-    );
+        const btns = document.createElement('div');
+        btns.className = 'btn-group';
 
-    // Unique Durchmesser
-    const dList = [...new Set(aktiveD.map(e => e.d))].sort((a, b) => a - b);
+        const aktiv = eintrag.aktiv !== false;
 
-    const outPos = document.getElementById('kombisPositiv');
-    const outNeg = document.getElementById('kombisNegativ');
-    outPos.innerHTML = '';
-    outNeg.innerHTML = '';
+        const aktivBtn = document.createElement('button');
+        aktivBtn.className = 'btn btn-sm ' + (aktiv ? 'btn-success' : 'btn-danger');
+        aktivBtn.textContent = aktiv ? 'Aktiv' : 'Inaktiv';
+        aktivBtn.onclick = () => {
+          lager[index].aktiv = !lager[index].aktiv;
+          speichernLager();
+          lagerAnzeigen();
+        };
 
-    if (!dList.length) {
-      outPos.innerHTML = '<div class="text-muted">Keine aktiven Lagerdrähte im passenden Durchmesserbereich.</div>';
-      outNeg.innerHTML = '<div class="text-muted">Keine aktiven Lagerdrähte im passenden Durchmesserbereich.</div>';
-      return;
+        const loeschBtn = document.createElement('button');
+        loeschBtn.className = 'btn btn-sm btn-outline-danger';
+        loeschBtn.textContent = 'Löschen';
+        loeschBtn.onclick = () => {
+          lager.splice(index, 1);
+          speichernLager();
+          lagerAnzeigen();
+        };
+
+        btns.appendChild(aktivBtn);
+        btns.appendChild(loeschBtn);
+        zeile.appendChild(text);
+        zeile.appendChild(btns);
+        liste.appendChild(zeile);
+      });
     }
 
-    // Fläche pro Durchmesser vorrechnen (schneller)
-    const areaByD = new Map();
-    for (const d of dList) {
-      areaByD.set(d, Math.PI * Math.pow(d / 2, 2));
+    function lagerHinzufuegen() {
+      const eingabe = document.getElementById('lagerEingabe');
+      const wert = Number(eingabe.value);
+
+      if (!Number.isFinite(wert) || wert <= 0) {
+        eingabe.focus();
+        return;
+      }
+
+      // keine Duplikate
+      const exists = lager.some(e => Math.abs(e.d - wert) < 1e-9);
+      if (exists) {
+        eingabe.value = '';
+        return;
+      }
+
+      lager.push({ d: wert, aktiv: true });
+      speichernLager();
+      lagerAnzeigen();
+      eingabe.value = '';
     }
 
-    // Darstellung
-    function kombiText(kombi) {
-      const zaehler = new Map();
-      for (const d of kombi) zaehler.set(d, (zaehler.get(d) || 0) + 1);
+    function berechneZiel() {
+      const dInputs = document.querySelectorAll('.durchmesser');
+      const nInputs = document.querySelectorAll('.anzahl');
 
-      return [...zaehler.entries()]
-        .sort((a, b) => a[0] - b[0])
-        .map(([d, n]) => `${n}x ${Number(d).toFixed(2)} mm`)
-        .join('<br>');
+      let summe = 0;
+      let minEingabe = Infinity;
+      let maxEingabe = -Infinity;
+
+      for (let i = 0; i < dInputs.length; i++) {
+        const dVal = dInputs[i].value.trim();
+        const nVal = nInputs[i].value.trim();
+        if (dVal === '' || nVal === '') continue;
+
+        const d = Number(dVal);
+        const n = Number(nVal);
+
+        if (!Number.isFinite(d) || d <= 0) continue;
+        if (!Number.isInteger(n) || n <= 0) continue;
+
+        const a = n * Math.PI * Math.pow(d / 2, 2);
+        summe += a;
+        if (d < minEingabe) minEingabe = d;
+        if (d > maxEingabe) maxEingabe = d;
+      }
+
+      if (!Number.isFinite(summe) || summe <= 0 || !isFinite(minEingabe) || !isFinite(maxEingabe)) {
+        document.getElementById('gesamtQuerschnitt').innerHTML =
+          `Gesamtquerschnitt: <strong>0.0000 mm²</strong>`;
+        document.getElementById('kombisPositiv').innerHTML = '';
+        document.getElementById('kombisNegativ').innerHTML = '';
+        return;
+      }
+
+      const ziel = summe;
+      document.getElementById('gesamtQuerschnitt').innerHTML =
+        `Gesamtquerschnitt: <strong>${ziel.toFixed(4)} mm²</strong>`;
+
+      berechneKombinationen(ziel, minEingabe, maxEingabe);
     }
 
-    function erstelleBlock(kombi, querschnitt) {
-      const abw = querschnitt - ziel;
-      const abwRel = (abw / ziel) * 100;
-      return `
-        <div class="kombiblock">
-          ${kombiText(kombi)}<br>
-          <strong>${querschnitt.toFixed(4)} mm²</strong><br>
-          Abweichung: ${abwRel.toFixed(2)}% (${abw.toFixed(4)} mm²)
-        </div>`;
-    }
+    function berechneKombinationen(ziel, minE, maxE) {
+      const abwMMU = Number(document.getElementById('abweichungUnter').value);
+      const abwMMO = Number(document.getElementById('abweichungOber').value);
+      const abwProzent = Number(document.getElementById('abweichungProzent').value);
 
-    // Top-Listen statt alles sammeln (spart extrem)
-    const topPos = []; // {draehte, q, diffAbs, len}
-    const topNeg = [];
+      const safeAbwMMU = Number.isFinite(abwMMU) ? abwMMU : 0;
+      const safeAbwMMO = Number.isFinite(abwMMO) ? abwMMO : 0;
+      const safeAbwProzent = Number.isFinite(abwProzent) ? abwProzent : 0;
 
-    function tryInsert(list, candidate, limit = 5) {
-      list.push(candidate);
-      list.sort((a, b) => a.diffAbs - b.diffAbs || a.len - b.len);
-      if (list.length > limit) list.pop();
-    }
+      const dMin = minE - safeAbwMMU;
+      const dMax = maxE + safeAbwMMO;
+      const delta = ziel * (safeAbwProzent / 100);
 
-    // Für Pruning: kleinste/größte Einzelfläche
-    const minArea = areaByD.get(dList[0]);
-    const maxArea = areaByD.get(dList[dList.length - 1]);
+      const aktiveD = lager.filter(e =>
+        e.aktiv && Number.isFinite(e.d) && e.d >= dMin && e.d <= dMax
+      );
 
-    // Rekursion mit running sum + early pruning
-    function dfs(kombi, startIndex, currentSum) {
-      const len = kombi.length;
+      const dList = [...new Set(aktiveD.map(e => e.d))].sort((a, b) => a - b);
 
-      if (len > 0) {
-        const diff = currentSum - ziel;
-        const diffAbs = Math.abs(diff);
+      const outPos = document.getElementById('kombisPositiv');
+      const outNeg = document.getElementById('kombisNegativ');
+      outPos.innerHTML = '';
+      outNeg.innerHTML = '';
 
-        if (diffAbs <= delta) {
-          const candidate = { draehte: [...kombi], q: currentSum, diffAbs, len };
-          if (diff >= 0) tryInsert(topPos, candidate);
-          else tryInsert(topNeg, candidate);
+      if (!dList.length) {
+        outPos.innerHTML = '<div class="text-muted">Keine aktiven Lagerdrähte im passenden Durchmesserbereich.</div>';
+        outNeg.innerHTML = '<div class="text-muted">Keine aktiven Lagerdrähte im passenden Durchmesserbereich.</div>';
+        return;
+      }
+
+      const areaByD = new Map();
+      for (const d of dList) areaByD.set(d, Math.PI * Math.pow(d / 2, 2));
+
+      function kombiText(kombi) {
+        const zaehler = new Map();
+        for (const d of kombi) zaehler.set(d, (zaehler.get(d) || 0) + 1);
+        return [...zaehler.entries()]
+          .sort((a, b) => a[0] - b[0])
+          .map(([d, n]) => `${n}x ${Number(d).toFixed(2)} mm`)
+          .join('<br>');
+      }
+
+      function erstelleBlock(kombi, querschnitt) {
+        const abw = querschnitt - ziel;
+        const abwRel = (abw / ziel) * 100;
+        return `
+          <div class="kombiblock">
+            ${kombiText(kombi)}<br>
+            <strong>${querschnitt.toFixed(4)} mm²</strong><br>
+            Abweichung: ${abwRel.toFixed(2)}% (${abw.toFixed(4)} mm²)
+          </div>`;
+      }
+
+      const topPos = [];
+      const topNeg = [];
+
+      function tryInsert(list, candidate, limit = 5) {
+        list.push(candidate);
+        list.sort((a, b) => a.diffAbs - b.diffAbs || a.len - b.len);
+        if (list.length > limit) list.pop();
+      }
+
+      const minArea = areaByD.get(dList[0]);
+      const maxArea = areaByD.get(dList[dList.length - 1]);
+
+      function dfs(kombi, startIndex, currentSum) {
+        const len = kombi.length;
+
+        if (len > 0) {
+          const diff = currentSum - ziel;
+          const diffAbs = Math.abs(diff);
+
+          if (diffAbs <= delta) {
+            const candidate = { draehte: [...kombi], q: currentSum, diffAbs, len };
+            if (diff >= 0) tryInsert(topPos, candidate);
+            else tryInsert(topNeg, candidate);
+          }
+        }
+
+        if (len >= 5) return;
+        if (currentSum > ziel + delta) return;
+
+        const rest = 5 - len;
+        const bestPossibleMax = currentSum + rest * maxArea;
+
+        if (bestPossibleMax < ziel - delta) return;
+
+        for (let i = startIndex; i < dList.length; i++) {
+          const d = dList[i];
+          const a = areaByD.get(d);
+          kombi.push(d);
+          dfs(kombi, i, currentSum + a);
+          kombi.pop();
         }
       }
 
-      if (len >= 5) return;
+      dfs([], 0, 0);
 
-      // Early pruning:
-      // Wenn wir bereits zu groß sind (über ziel+delta), wird’s nur noch größer → abbrechen
-      if (currentSum > ziel + delta) return;
+      outPos.innerHTML = topPos.length
+        ? topPos.map(k => erstelleBlock(k.draehte, k.q)).join('')
+        : '<div class="text-muted">Keine passenden Kombinationen gefunden.</div>';
 
-      // Wenn wir selbst mit maximaler Auffüllung nicht mehr in Reichweite kommen, abbrechen
-      // maxRest = (5-len)*maxArea, minRest = (5-len)*minArea
-      const rest = 5 - len;
-      const bestPossibleMax = currentSum + rest * maxArea;
-      const bestPossibleMin = currentSum + rest * minArea;
+      outNeg.innerHTML = topNeg.length
+        ? topNeg.map(k => erstelleBlock(k.draehte, k.q)).join('')
+        : '<div class="text-muted">Keine passenden Kombinationen gefunden.</div>';
+    }
 
-      // Wenn selbst mit maximaler Ergänzung unterhalb (ziel-delta) bleiben → sinnlos
-      if (bestPossibleMax < ziel - delta) return;
-      // Wenn selbst mit minimaler Ergänzung über (ziel+delta) liegen würde → ab nächstem Schritt eher sinnlos,
-      // aber wir prüfen ohnehin currentSum > ziel+delta oben; hier lassen wir laufen, weil wir evtl. noch knapp werden.
+    document.addEventListener('DOMContentLoaded', () => {
+      const gespeicherte = localStorage.getItem('drahtlager');
 
-      for (let i = startIndex; i < dList.length; i++) {
-        const d = dList[i];
-        const a = areaByD.get(d);
-        kombi.push(d);
-        dfs(kombi, i, currentSum + a); // i → Wiederholungen erlaubt
-        kombi.pop();
+      if (gespeicherte) {
+        try {
+          lager = JSON.parse(gespeicherte).map(e => ({
+            d: Number(e.d),
+            aktiv: e.aktiv !== false
+          })).filter(e => Number.isFinite(e.d) && e.d > 0);
+        } catch {
+          lager = [];
+        }
       }
-    }
 
-    dfs([], 0, 0);
-
-    // Ausgabe
-    if (!topPos.length) {
-      outPos.innerHTML = '<div class="text-muted">Keine passenden Kombinationen gefunden.</div>';
-    } else {
-      outPos.innerHTML = topPos.map(k => erstelleBlock(k.draehte, k.q)).join('');
-    }
-
-    if (!topNeg.length) {
-      outNeg.innerHTML = '<div class="text-muted">Keine passenden Kombinationen gefunden.</div>';
-    } else {
-      outNeg.innerHTML = topNeg.map(k => erstelleBlock(k.draehte, k.q)).join('');
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const gespeicherte = localStorage.getItem('drahtlager');
-    if (gespeicherte) {
-      try {
-        lager = JSON.parse(gespeicherte).map(e => ({
-          d: Number(e.d),
-          aktiv: e.aktiv !== false
-        })).filter(e => Number.isFinite(e.d) && e.d > 0);
-      } catch {
-        lager = [];
+      // Wenn noch kein Lager existiert: Standardlager setzen
+      if (!lager.length) {
+        lager = [...STANDARD_LAGER];
+        speichernLager();
       }
-    }
-    lagerAnzeigen();
-  });
-</script>
 
-
+      lagerAnzeigen();
+    });
+  </script>
 </body>
 </html>
