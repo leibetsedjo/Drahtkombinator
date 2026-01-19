@@ -17,9 +17,7 @@ input, button {
   margin: 4px;
   padding: 6px;
 }
-button {
-  cursor: pointer;
-}
+button { cursor: pointer; }
 .result {
   margin-top: 15px;
   padding: 10px;
@@ -63,30 +61,35 @@ function App() {
 
     rows.forEach(r => {
       const d = parseFloat(r.d);
-      const n = parseInt(r.n);
-      if (!isNaN(d) && !isNaN(n)) {
+      const n = parseInt(r.n, 10);
+      if (!isNaN(d) && !isNaN(n) && n > 0) {
         minD = Math.min(minD, d);
         maxD = Math.max(maxD, d);
         for (let i = 0; i < n; i++) stock.push(d);
       }
     });
 
-    if (!stock.length) return;
+    if (!stock.length || !isFinite(minD)) {
+      setResults([]);
+      return;
+    }
 
+    // Durchmesserbereich einschränken
     const minAllowed = minD - tolMinus;
     const maxAllowed = maxD + tolPlus;
     stock = stock.filter(d => d >= minAllowed && d <= maxAllowed);
 
     const target = area(minD);
-    let combis = [];
 
+    let combis = [];
     for (let i = 0; i < stock.length && combis.length < 1000; i++) {
       let sum = 0;
       let used = [];
       for (let j = i; j < stock.length; j++) {
-        if (used.length >= 4) break;
+        if (used.length >= 5) break; // ✅ MAXIMAL 5 DRÄHTE
         sum += area(stock[j]);
         used.push(stock[j]);
+
         const dev = (sum - target) / target * 100;
         if (Math.abs(dev) <= maxDev) {
           combis.push({ used: [...used], dev });
@@ -94,21 +97,43 @@ function App() {
       }
     }
 
-    let bestPlus = combis
+    const plusList = combis
       .filter(c => c.dev >= 0)
-      .sort((a, b) => a.dev - b.dev)[0];
+      .sort((a, b) => a.dev - b.dev);
 
-    let bestMinus = combis
+    const minusList = combis
       .filter(c => c.dev < 0)
       .sort((a, b) => b.dev - a.dev);
 
-    let res = [];
-    if (bestPlus) res.push(bestPlus);
-    if (bestMinus.length) {
-      res.push(bestMinus[bestPlus ? 0 : 1] || bestMinus[0]);
+    let out = [];
+
+    if (plusList.length > 0) {
+      out.push({
+        ...plusList[0],
+        title: "Kombination 1 (beste positive)"
+      });
+
+      if (minusList.length > 0) {
+        out.push({
+          ...minusList[0],
+          title: "Kombination 2 (beste negative)"
+        });
+      }
+    } else if (minusList.length > 0) {
+      out.push({
+        ...minusList[0],
+        title: "Kombination 1 (beste negative)"
+      });
+
+      if (minusList.length > 1) {
+        out.push({
+          ...minusList[1],
+          title: "Kombination 2 (negativ)"
+        });
+      }
     }
 
-    setResults(res);
+    setResults(out);
   }
 
   function savePDF() {
@@ -135,11 +160,11 @@ function App() {
 
     e("div", null,
       "Max. Abweichung %: ",
-      e("input", { type: "number", value: maxDev, onChange: e => setMaxDev(+e.target.value) }),
+      e("input", { type: "number", value: maxDev, onChange: ev => setMaxDev(+ev.target.value) }),
       "  - Toleranz mm: ",
-      e("input", { type: "number", value: tolMinus, onChange: e => setTolMinus(+e.target.value) }),
+      e("input", { type: "number", value: tolMinus, onChange: ev => setTolMinus(+ev.target.value) }),
       "  + Toleranz mm: ",
-      e("input", { type: "number", value: tolPlus, onChange: e => setTolPlus(+e.target.value) })
+      e("input", { type: "number", value: tolPlus, onChange: ev => setTolPlus(+ev.target.value) })
     ),
 
     e("div", null,
@@ -149,7 +174,7 @@ function App() {
       e("input", {
         placeholder: "Dateiname für PDF (optional)",
         value: pdfName,
-        onChange: e => setPdfName(e.target.value)
+        onChange: ev => setPdfName(ev.target.value)
       })
     ),
 
@@ -158,11 +183,7 @@ function App() {
         key: i,
         className: "result " + (r.dev >= 0 ? "positive" : "negative")
       },
-        e("h4", null,
-          i === 0
-            ? r.dev >= 0 ? "Kombination 1 (beste +)" : "Kombination 1 (beste −)"
-            : "Kombination 2 (zweitbeste −)"
-        ),
+        e("h4", null, r.title),
         e("div", null, "Drähte: ", r.used.join(", "), " mm"),
         e("div", null, "Abweichung: ", r.dev.toFixed(2), " %")
       )
