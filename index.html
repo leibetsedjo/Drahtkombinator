@@ -25,14 +25,24 @@
       padding: 10px;
       border-radius: 8px;
       cursor: pointer;
+      user-select: none;
     }
+
+    /* ✅ NEU: Header-Farbe für "ohne Wiederholung" */
+    .kombigruppe-header-einmal {
+      background-color: #6f42c1; /* Lila */
+      color: white;
+    }
+    .kombigruppe-header-einmal:hover { background-color: #5f36a8; }
+    .kombigruppe-header:hover { filter: brightness(0.95); }
 
     /* ✅ Print/PDF Styling */
     @media print {
       .no-print { display: none !important; }
       .container { max-width: 100% !important; }
       body { background: #fff !important; }
-      .kombigruppe-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .kombigruppe-header,
+      .kombigruppe-header-einmal { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .alert { border: 1px solid #bcd; }
       /* Lagerbereich für Druck ausblenden (kannst du entfernen, wenn du Lager mitdrucken willst) */
       #lagerVerwaltung { display: none !important; }
@@ -115,6 +125,26 @@
           <div class="kombiliste" id="kombisNegativ"></div>
         </div>
       </div>
+
+      <!-- ✅ NEU: Ohne Wiederholung (farblich lila) -->
+      <div class="kombigruppe mb-3">
+        <div class="kombigruppe-header kombigruppe-header-einmal" data-bs-toggle="collapse" data-bs-target="#positivKombisEinmal" aria-expanded="true">
+          🔺 Kombinationen positiv (ohne Wiederholung / jeder Draht nur einmal)
+        </div>
+        <div class="collapse show" id="positivKombisEinmal">
+          <div class="kombiliste" id="kombisPositivEinmal"></div>
+        </div>
+      </div>
+
+      <div class="kombigruppe mb-3">
+        <div class="kombigruppe-header kombigruppe-header-einmal" data-bs-toggle="collapse" data-bs-target="#negativKombisEinmal" aria-expanded="true">
+          🔻 Kombinationen negativ (ohne Wiederholung / jeder Draht nur einmal)
+        </div>
+        <div class="collapse show" id="negativKombisEinmal">
+          <div class="kombiliste" id="kombisNegativEinmal"></div>
+        </div>
+      </div>
+      <!-- ✅ /NEU -->
     </div>
 
     <!-- Lager ist standardmäßig zu -->
@@ -168,8 +198,8 @@
 
     // ✅ Standard-Lagerwerte
     const STANDARD_LAGER = [
-      0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60,
-      0.70, 0.75, 0.80,
+      0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 
+      0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00, 
       1.06, 1.12, 1.18, 1.20, 1.25
     ].map(d => ({ d, aktiv: true }));
 
@@ -183,6 +213,11 @@
         'Gesamtquerschnitt: <strong>0.0000 mm²</strong>';
       document.getElementById('kombisPositiv').innerHTML = '';
       document.getElementById('kombisNegativ').innerHTML = '';
+
+      // ✅ NEU: auch die neuen Bereiche leeren
+      document.getElementById('kombisPositivEinmal').innerHTML = '';
+      document.getElementById('kombisNegativEinmal').innerHTML = '';
+
       const first = document.querySelector('.durchmesser');
       if (first) first.focus();
     }
@@ -212,8 +247,6 @@
       if (lagerEl.classList.contains('show')) {
         bootstrap.Collapse.getOrCreateInstance(lagerEl).hide();
       }
-
-      // Druckdialog öffnen (User wählt “Als PDF speichern”)
       window.print();
     }
 
@@ -318,6 +351,8 @@
           `Gesamtquerschnitt: <strong>0.0000 mm²</strong>`;
         document.getElementById('kombisPositiv').innerHTML = '';
         document.getElementById('kombisNegativ').innerHTML = '';
+        document.getElementById('kombisPositivEinmal').innerHTML = '';
+        document.getElementById('kombisNegativEinmal').innerHTML = '';
         return;
       }
 
@@ -352,9 +387,17 @@
       outPos.innerHTML = '';
       outNeg.innerHTML = '';
 
+      const outPosEinmal = document.getElementById('kombisPositivEinmal');
+      const outNegEinmal = document.getElementById('kombisNegativEinmal');
+      outPosEinmal.innerHTML = '';
+      outNegEinmal.innerHTML = '';
+
       if (!dList.length) {
-        outPos.innerHTML = '<div class="text-muted">Keine aktiven Lagerdrähte im passenden Durchmesserbereich.</div>';
-        outNeg.innerHTML = '<div class="text-muted">Keine aktiven Lagerdrähte im passenden Durchmesserbereich.</div>';
+        const msg = '<div class="text-muted">Keine aktiven Lagerdrähte im passenden Durchmesserbereich.</div>';
+        outPos.innerHTML = msg;
+        outNeg.innerHTML = msg;
+        outPosEinmal.innerHTML = msg;
+        outNegEinmal.innerHTML = msg;
         return;
       }
 
@@ -383,6 +426,8 @@
 
       const topPos = [];
       const topNeg = [];
+      const topPosEinmalList = [];
+      const topNegEinmalList = [];
 
       function tryInsert(list, candidate, limit = 5) {
         list.push(candidate);
@@ -392,6 +437,7 @@
 
       const maxArea = areaByD.get(dList[dList.length - 1]);
 
+      // --- MIT Wiederholung
       function dfs(kombi, startIndex, currentSum) {
         const len = kombi.length;
 
@@ -417,12 +463,44 @@
           const d = dList[i];
           const a = areaByD.get(d);
           kombi.push(d);
-          dfs(kombi, i, currentSum + a);
+          dfs(kombi, i, currentSum + a); // Wiederholung erlaubt
+          kombi.pop();
+        }
+      }
+
+      // --- OHNE Wiederholung
+      function dfsNoRepeat(kombi, startIndex, currentSum) {
+        const len = kombi.length;
+
+        if (len > 0) {
+          const diff = currentSum - ziel;
+          const diffAbs = Math.abs(diff);
+
+          if (diffAbs <= delta) {
+            const candidate = { draehte: [...kombi], q: currentSum, diffAbs, len };
+            if (diff >= 0) tryInsert(topPosEinmalList, candidate);
+            else tryInsert(topNegEinmalList, candidate);
+          }
+        }
+
+        if (len >= 5) return;
+        if (currentSum > ziel + delta) return;
+
+        const rest = 5 - len;
+        const bestPossibleMax = currentSum + rest * maxArea;
+        if (bestPossibleMax < ziel - delta) return;
+
+        for (let i = startIndex; i < dList.length; i++) {
+          const d = dList[i];
+          const a = areaByD.get(d);
+          kombi.push(d);
+          dfsNoRepeat(kombi, i + 1, currentSum + a); // i+1 => keine Wiederholung
           kombi.pop();
         }
       }
 
       dfs([], 0, 0);
+      dfsNoRepeat([], 0, 0);
 
       outPos.innerHTML = topPos.length
         ? topPos.map(k => erstelleBlock(k.draehte, k.q)).join('')
@@ -430,6 +508,14 @@
 
       outNeg.innerHTML = topNeg.length
         ? topNeg.map(k => erstelleBlock(k.draehte, k.q)).join('')
+        : '<div class="text-muted">Keine passenden Kombinationen gefunden.</div>';
+
+      outPosEinmal.innerHTML = topPosEinmalList.length
+        ? topPosEinmalList.map(k => erstelleBlock(k.draehte, k.q)).join('')
+        : '<div class="text-muted">Keine passenden Kombinationen gefunden.</div>';
+
+      outNegEinmal.innerHTML = topNegEinmalList.length
+        ? topNegEinmalList.map(k => erstelleBlock(k.draehte, k.q)).join('')
         : '<div class="text-muted">Keine passenden Kombinationen gefunden.</div>';
     }
 
